@@ -315,6 +315,223 @@ def validar_fase_1(data_dir: Path) -> bool:
         return True
 
 
+def validar_fase_2(data_dir: Path) -> bool:
+    print("\n" + "=" * 60)
+    print("VALIDAÇÃO DOS INVARIANTES E DISTRIBUIÇÕES — FASE 2")
+    print(f"Diretório de dados: {data_dir}")
+    print("=" * 60)
+
+    erros = []
+
+    p_ind = data_dir / "fIndicadores_ML.csv"
+    p_est = data_dir / "fEstoqueDemanda.csv"
+
+    if not p_ind.exists():
+        print(f"  ❌ Arquivo obrigatório não encontrado: {p_ind.name}")
+        return False
+
+    df_ind = pd.read_csv(p_ind, low_memory=False)
+    n_total = len(df_ind)
+    print(f"\n[Dataset carregado: {n_total:,} linhas]")
+
+    # -------------------------------------------------------------
+    # 1. Verificação de Colunas (54 colunas exatas conforme §3.7)
+    # -------------------------------------------------------------
+    print("\n--- [1] Verificação das 54 colunas obrigatórias (§3.7) ---")
+    colunas_esperadas = [
+        # Existentes (21)
+        'Filial', 'Codigo_Produto', 'Nome_Produto', 'Categoria', 'Comprador',
+        'Estoque_Atual', 'Demanda_Atual', 'Demanda_Ponderada', 'Dias_Cobertura',
+        'Status_Ruptura', 'Qtd_Estoque_Excesso', 'Nivel_Excesso', 'Indice_Excesso_Filial_Perc',
+        'Qtd_AV', 'Valor_AV', 'Qtd_Vendas_Normais', 'Qtd_Vendas_AV', 'Qtd_Perdas', 'Valor_Perdas',
+        'Score_Risco_Perda_ML', 'Categoria_Risco_Perda',
+        # Novas colunas de negócio (23)
+        'Grupo', 'Principio_Ativo', 'MG', 'Custo', 'Demanda_Rede',
+        'Ultima_Venda', 'Ultima_Entrada', 'Qtd_A_Vencer', 'Qtd_Perdida_Ano',
+        'Tendencia_Perda', 'Prazo_Validade_Meses', 'Qtd_Vendida_Maior_Filial',
+        'Filial_Maior_Venda', 'Vendas_PA_Filial', 'Vendas_PA_Rede',
+        'Valor_Estoque_Custo', 'Valor_Excesso_Custo',
+        'Score_Auditoria_Base', 'Score_Auditoria', 'Classificacao_Risco_Auditoria',
+        'Risco_Demanda_Venda', 'Acao_Recomendada', 'Produto_Referencia_PA',
+        # Contribuições explicáveis (10)
+        'Contrib_meses_desde_ultima_venda',
+        'Contrib_estoque_sobre_demanda_log',
+        'Contrib_proporcao_a_vencer',
+        'Contrib_proporcao_perda',
+        'Contrib_custo_total_estoque',
+        'Contrib_TENDENCIA_NUM',
+        'Contrib_venda_max_log',
+        'Contrib_demanda_rede_log',
+        'Contrib_dias_desde_ultima_entrada',
+        'Contrib_Categoria'
+    ]
+
+    cols_faltantes = [c for c in colunas_esperadas if c not in df_ind.columns]
+    if cols_faltantes:
+        erros.append(f"Colunas ausentes ({len(cols_faltantes)}): {cols_faltantes}")
+        print(f"  ❌ {erros[-1]}")
+    else:
+        print(f"  ✅ Todas as {len(colunas_esperadas)} colunas obrigatórias estão presentes.")
+
+    # Chave única
+    duplicados = df_ind.duplicated(subset=['Filial', 'Codigo_Produto']).sum()
+    if duplicados == 0:
+        print(f"  ✅ Chave (Filial, Codigo_Produto) é única: 0 duplicatas.")
+    else:
+        erros.append(f"Encontradas {duplicados:,} duplicatas de (Filial, Codigo_Produto).")
+        print(f"  ❌ {erros[-1]}")
+
+    if p_est.exists():
+        df_est = pd.read_csv(p_est)
+        if len(df_est) == n_total:
+            print(f"  ✅ Contagem de linhas idêntica a fEstoqueDemanda ({n_total:,} linhas).")
+        else:
+            erros.append(f"Tamanho divergente de fEstoqueDemanda: {n_total:,} vs {len(df_est):,}.")
+            print(f"  ❌ {erros[-1]}")
+
+    # -------------------------------------------------------------
+    # 2. Consistência do Score de Auditoria e Contribuições
+    # -------------------------------------------------------------
+    print("\n--- [2] Consistência do Score de Auditoria e Soma de Contribuições ---")
+    mask_com_estoque = df_ind['Estoque_Atual'] > 0
+    mask_sem_estoque = df_ind['Estoque_Atual'] == 0
+
+    # Linhas sem estoque devem ter Score_Auditoria NaN
+    score_sem_est_notna = df_ind.loc[mask_sem_estoque, 'Score_Auditoria'].notna().sum()
+    if score_sem_est_notna == 0:
+        print(f"  ✅ 100% das linhas com Estoque=0 têm Score_Auditoria NaN ({mask_sem_estoque.sum():,} linhas).")
+    else:
+        erros.append(f"{score_sem_est_notna:,} linhas com Estoque=0 possuem Score_Auditoria não-nulo.")
+        print(f"  ❌ {erros[-1]}")
+
+    # Linhas com estoque devem ter Score no intervalo [0.0; 1.10]
+    df_com_score = df_ind[mask_com_estoque].copy()
+    scores_fora_faixa = ((df_com_score['Score_Auditoria'] < 0.0) | (df_com_score['Score_Auditoria'] > 1.10)).sum()
+    if scores_fora_faixa == 0:
+        print(f"  ✅ 100% dos scores com estoque estão no intervalo [0.0; 1.10].")
+    else:
+        erros.append(f"{scores_fora_faixa:,} linhas possuem Score_Auditoria fora do intervalo [0.0; 1.10].")
+        print(f"  ❌ {erros[-1]}")
+
+    # Soma de Contrib_* == Score_Auditoria (±0.001)
+    contrib_cols = [c for c in df_ind.columns if c.startswith('Contrib_')]
+    soma_contribs = np.round(df_com_score[contrib_cols].sum(axis=1), 4)
+    dif_soma = np.abs(soma_contribs - df_com_score['Score_Auditoria'])
+    inconsistencias_soma = (dif_soma > 0.001).sum()
+
+    if inconsistencias_soma == 0:
+        print(f"  ✅ 100% das linhas com score ({len(df_com_score):,}) satisfazem soma(Contrib_*) == Score_Auditoria (±0.001).")
+    else:
+        max_dif = dif_soma.max()
+        erros.append(f"{inconsistencias_soma:,} linhas falharam na igualdade da soma de contribuições (diferença máx: {max_dif:.4f}).")
+        print(f"  ❌ {erros[-1]}")
+
+    # -------------------------------------------------------------
+    # 3. Metas de Distribuição (§3.6)
+    # -------------------------------------------------------------
+    print("\n--- [3] Validação das Metas de Distribuição (§3.6) ---")
+
+    # A. Classificação de Risco de Auditoria
+    # Alto Risco: 3–12% | Médio-Alto: 5–15% | Baixo Risco: >= 50%
+    pct_alto = (df_ind['Classificacao_Risco_Auditoria'] == 'Alto Risco').mean() * 100
+    pct_medio_alto = (df_ind['Classificacao_Risco_Auditoria'] == 'Médio-Alto Risco').mean() * 100
+    pct_baixo = (df_ind['Classificacao_Risco_Auditoria'] == 'Baixo Risco').mean() * 100
+
+    print(f"  • Classificação Risco Auditoria:")
+    print(f"    - Alto Risco:       {pct_alto:.2f}% (meta: 3.0% – 12.0%)")
+    print(f"    - Médio-Alto Risco: {pct_medio_alto:.2f}% (meta: 5.0% – 15.0%)")
+    print(f"    - Baixo Risco:      {pct_baixo:.2f}% (meta: >= 50.0%)")
+
+    if not (3.0 <= pct_alto <= 12.0):
+        erros.append(f"Alto Risco fora da meta: {pct_alto:.2f}% (esperado [3.0%; 12.0%])")
+        print(f"    ❌ {erros[-1]}")
+    else:
+        print("    ✅ Alto Risco dentro da meta.")
+
+    if not (5.0 <= pct_medio_alto <= 15.0):
+        erros.append(f"Médio-Alto Risco fora da meta: {pct_medio_alto:.2f}% (esperado [5.0%; 15.0%])")
+        print(f"    ❌ {erros[-1]}")
+    else:
+        print("    ✅ Médio-Alto Risco dentro da meta.")
+
+    if pct_baixo < 50.0:
+        erros.append(f"Baixo Risco abaixo da meta: {pct_baixo:.2f}% (esperado >= 50.0%)")
+        print(f"    ❌ {erros[-1]}")
+    else:
+        print("    ✅ Baixo Risco dentro da meta.")
+
+    # B. Status_Ruptura
+    # Ruptura Consumada: 1–2.5% | Crítico/Alto Risco: 2–6%
+    pct_rupt_cons = (df_ind['Status_Ruptura'] == 'Ruptura Consumada').mean() * 100
+    pct_rupt_crit = (df_ind['Status_Ruptura'] == 'Crítico / Alto Risco').mean() * 100
+
+    print(f"  • Status Ruptura:")
+    print(f"    - Ruptura Consumada:   {pct_rupt_cons:.2f}% (meta: 1.0% – 2.5%)")
+    print(f"    - Crítico / Alto Risco: {pct_rupt_crit:.2f}% (meta: 2.0% – 6.0%)")
+
+    if not (1.0 <= pct_rupt_cons <= 2.5):
+        erros.append(f"Ruptura Consumada fora da meta: {pct_rupt_cons:.2f}% (esperado [1.0%; 2.5%])")
+        print(f"    ❌ {erros[-1]}")
+    else:
+        print("    ✅ Ruptura Consumada dentro da meta.")
+
+    if not (2.0 <= pct_rupt_crit <= 6.0):
+        erros.append(f"Crítico / Alto Risco fora da meta: {pct_rupt_crit:.2f}% (esperado [2.0%; 6.0%])")
+        print(f"    ❌ {erros[-1]}")
+    else:
+        print("    ✅ Crítico / Alto Risco dentro da meta.")
+
+    # C. Nível de Excesso
+    # Elevado + Crítico: 10–25%
+    mask_excesso = df_ind['Nivel_Excesso'].isin(['Excesso Elevado', 'Excesso Crítico'])
+    pct_excesso = mask_excesso.mean() * 100
+    print(f"  • Nível de Excesso (Elevado + Crítico): {pct_excesso:.2f}% (meta: 10.0% – 25.0%)")
+
+    if not (10.0 <= pct_excesso <= 25.0):
+        erros.append(f"Nível de Excesso fora da meta: {pct_excesso:.2f}% (esperado [10.0%; 25.0%])")
+        print(f"    ❌ {erros[-1]}")
+    else:
+        print("    ✅ Nível de Excesso dentro da meta.")
+
+    # D. Categoria de Risco de Perda (ML)
+    # Crítico + Alto: 3–15%
+    mask_perda_risco = df_ind['Categoria_Risco_Perda'].isin(['Crítico', 'Alto'])
+    pct_perda_risco = mask_perda_risco.mean() * 100
+    print(f"  • Categoria Risco Perda ML (Crítico + Alto): {pct_perda_risco:.2f}% (meta: 3.0% – 15.0%)")
+
+    if not (3.0 <= pct_perda_risco <= 15.0):
+        erros.append(f"Categoria Risco Perda ML fora da meta: {pct_perda_risco:.2f}% (esperado [3.0%; 15.0%])")
+        print(f"    ❌ {erros[-1]}")
+    else:
+        print("    ✅ Categoria Risco Perda ML dentro da meta.")
+
+    # E. Ação Recomendada
+    # >= 30% das linhas com ação recomendada válida
+    mask_acao_valida = df_ind['Acao_Recomendada'].notna() & \
+                       (df_ind['Acao_Recomendada'] != '') & \
+                       (df_ind['Acao_Recomendada'] != 'Nenhuma')
+    pct_com_acao = mask_acao_valida.mean() * 100
+    print(f"  • Ação Recomendada: {pct_com_acao:.2f}% (meta: >= 30.0%)")
+
+    if pct_com_acao < 30.0:
+        erros.append(f"Ação Recomendada abaixo da meta: {pct_com_acao:.2f}% (esperado >= 30.0%)")
+        print(f"    ❌ {erros[-1]}")
+    else:
+        print("    ✅ Ação Recomendada dentro da meta.")
+
+    print("\n" + "=" * 60)
+    if erros:
+        print(f"RESULTADO: ❌ FALHA ({len(erros)} erros encontrados)")
+        for e in erros:
+            print(f" - {e}")
+        print("=" * 60)
+        return False
+    else:
+        print("RESULTADO: ✅ SUCESSO! Todos os critérios de aceite e distribuições da Fase 2 foram validados com êxito.")
+        print("=" * 60)
+        return True
+
+
 def main():
     parser = argparse.ArgumentParser(description="Validador de Invariantes do Pipeline de Prevenção de Perdas")
     parser.add_argument("--fase", type=int, required=True, choices=[1, 2], help="Número da fase a validar (1 ou 2)")
@@ -327,8 +544,8 @@ def main():
         ok = validar_fase_1(data_dir)
         sys.exit(0 if ok else 1)
     elif args.fase == 2:
-        print("Validação da Fase 2 será implementada na Fase 2.")
-        sys.exit(0)
+        ok = validar_fase_2(data_dir)
+        sys.exit(0 if ok else 1)
 
 
 if __name__ == "__main__":

@@ -157,52 +157,78 @@ def consolidar_dados():
     n_universo = len(df_est_completo)
     print(f"    Total do universo expandido: {n_universo:,} pares.")
 
-    # Ajustes de Demanda=0 (~20%) e Ruptura Consumada (~1.8%)
-    print("  - Calibrando participações: ~20% Demanda=0 e ~1.8% Ruptura Consumada (Estoque=0)...")
+    # Calibração fina das distribuições (§3.6)
+    print("  - Calibrando participações e coberturas para atender §3.6...")
     indices_shuffled = np.random.permutation(n_universo)
 
-    # 1. 20.0% dos pares: Demanda_Atual = 0 e Demanda_Ponderada = U(0; 1.5)
+    # 1. 20.0% dos pares: Demanda_Atual = 0 e Demanda_Ponderada = U(0.5; 1.8) (P3, I7)
     n_dem_zero = int(n_universo * 0.200)
     idx_dem_zero = indices_shuffled[:n_dem_zero]
 
     df_est_completo.loc[idx_dem_zero, 'Demanda_Atual'] = 0
     df_est_completo.loc[idx_dem_zero, 'Demanda_Ponderada'] = np.round(
-        np.random.uniform(0.0, 1.5, size=n_dem_zero), 2
+        np.random.uniform(0.5, 1.8, size=n_dem_zero), 2
     )
-    # Garante que esses pares com demanda zero tenham Estoque_Atual > 0
-    est_zero_em_dem_zero = df_est_completo.loc[idx_dem_zero, 'Estoque_Atual'] <= 0
-    if est_zero_em_dem_zero.any():
-        df_est_completo.loc[idx_dem_zero[est_zero_em_dem_zero], 'Estoque_Atual'] = np.random.randint(
-            1, 25, size=est_zero_em_dem_zero.sum()
-        )
+    # Metade dos itens sem demanda (10% do total) com estoque unitário normal (~20 dias),
+    # e metade (10% do total) com estoque excessivo (cobertura > 60 dias)
+    n_dem_zero_normal = int(n_dem_zero * 0.50)
+    idx_dz_normal = idx_dem_zero[:n_dem_zero_normal]
+    idx_dz_excesso = idx_dem_zero[n_dem_zero_normal:]
+    df_est_completo.loc[idx_dz_normal, 'Estoque_Atual'] = 1
+    df_est_completo.loc[idx_dz_excesso, 'Estoque_Atual'] = np.random.randint(4, 12, size=len(idx_dz_excesso))
 
-    # 2. 1.8% dos pares adicionais: Estoque_Atual = 0 e Demanda_Atual > 0 (Ruptura Consumada)
+    # 2. 1.8% dos pares adicionais: Estoque_Atual = 0 e Demanda_Atual > 0 (Ruptura Consumada: 1–2.5%)
     n_est_zero = int(n_universo * 0.018)
     idx_est_zero = indices_shuffled[n_dem_zero:n_dem_zero + n_est_zero]
 
     df_est_completo.loc[idx_est_zero, 'Estoque_Atual'] = 0
-    # Garante que Demanda_Atual > 0 para esses pares (Ruptura Consumada)
-    dem_invalida = df_est_completo.loc[idx_est_zero, 'Demanda_Atual'] <= 0
-    if dem_invalida.any():
-        df_est_completo.loc[idx_est_zero[dem_invalida], 'Demanda_Atual'] = np.random.randint(
-            1, 15, size=dem_invalida.sum()
-        )
-        df_est_completo.loc[idx_est_zero[dem_invalida], 'Demanda_Ponderada'] = np.round(
-            df_est_completo.loc[idx_est_zero[dem_invalida], 'Demanda_Atual'] * np.random.uniform(0.8, 1.2), 2
-        )
+    dem_val_rupt = np.random.randint(2, 20, size=n_est_zero)
+    df_est_completo.loc[idx_est_zero, 'Demanda_Atual'] = dem_val_rupt
+    df_est_completo.loc[idx_est_zero, 'Demanda_Ponderada'] = np.round(
+        dem_val_rupt * np.random.uniform(0.85, 1.15, size=n_est_zero), 2
+    )
 
-    # 3. Demais pares: garantir Estoque_Atual > 0 e Demanda_Atual > 0
-    idx_restantes = indices_shuffled[n_dem_zero + n_est_zero:]
-    est_restante_invalido = df_est_completo.loc[idx_restantes, 'Estoque_Atual'] <= 0
-    if est_restante_invalido.any():
-        df_est_completo.loc[idx_restantes[est_restante_invalido], 'Estoque_Atual'] = np.random.randint(
-            1, 30, size=est_restante_invalido.sum()
-        )
-    dem_restante_invalida = df_est_completo.loc[idx_restantes, 'Demanda_Atual'] <= 0
-    if dem_restante_invalida.any():
-        df_est_completo.loc[idx_restantes[dem_restante_invalida], 'Demanda_Atual'] = np.random.randint(
-            1, 20, size=dem_restante_invalida.sum()
-        )
+    # 3. 3.5% dos pares: Crítico / Alto Risco (Dias_Cobertura < 3.0 dias: meta 2–6%)
+    n_rupt_crit = int(n_universo * 0.035)
+    idx_rupt_crit = indices_shuffled[n_dem_zero + n_est_zero:n_dem_zero + n_est_zero + n_rupt_crit]
+
+    dem_crit = np.round(np.random.uniform(35.0, 70.0, size=n_rupt_crit), 2)
+    df_est_completo.loc[idx_rupt_crit, 'Demanda_Ponderada'] = dem_crit
+    df_est_completo.loc[idx_rupt_crit, 'Demanda_Atual'] = np.round(
+        dem_crit * np.random.uniform(0.85, 1.15, size=n_rupt_crit)
+    ).astype(int)
+    # Estoque 1 a 2 unidades com demanda 35..70 gera cobertura de 0.8 a 2.5 dias (< 3.0 dias)
+    df_est_completo.loc[idx_rupt_crit, 'Estoque_Atual'] = np.random.randint(1, 3, size=n_rupt_crit)
+
+    # 4. 6.0% dos pares ativos: Excesso Elevado/Crítico (cobertura > 45 dias)
+    # Total de excesso no catálogo: 10% (sem demanda) + 6% (ativos) = 16% (meta 10–25%)
+    n_exc_active = int(n_universo * 0.060)
+    idx_exc_active = indices_shuffled[
+        n_dem_zero + n_est_zero + n_rupt_crit:
+        n_dem_zero + n_est_zero + n_rupt_crit + n_exc_active
+    ]
+
+    dem_exc = np.round(np.random.uniform(10.0, 35.0, size=n_exc_active), 2)
+    df_est_completo.loc[idx_exc_active, 'Demanda_Ponderada'] = dem_exc
+    df_est_completo.loc[idx_exc_active, 'Demanda_Atual'] = np.round(
+        dem_exc * np.random.uniform(0.85, 1.15, size=n_exc_active)
+    ).astype(int)
+    df_est_completo.loc[idx_exc_active, 'Estoque_Atual'] = np.round(
+        dem_exc * np.random.uniform(2.0, 4.2, size=n_exc_active)
+    ).astype(int)
+
+    # 5. Demais pares (~68.7%): Estoque Normal e Saudável (cobertura 12 a 28 dias)
+    idx_restantes = indices_shuffled[n_dem_zero + n_est_zero + n_rupt_crit + n_exc_active:]
+    n_restantes = len(idx_restantes)
+
+    dem_norm = np.round(np.random.uniform(12.0, 45.0, size=n_restantes), 2)
+    df_est_completo.loc[idx_restantes, 'Demanda_Ponderada'] = dem_norm
+    df_est_completo.loc[idx_restantes, 'Demanda_Atual'] = np.round(
+        dem_norm * np.random.uniform(0.85, 1.15, size=n_restantes)
+    ).astype(int)
+    # Cobertura enxuta de varejo: estoque = 0.35 a 0.80 da demanda mensal (11 a 24 dias)
+    est_norm = np.maximum(1, np.round(dem_norm * np.random.uniform(0.35, 0.80, size=n_restantes)).astype(int))
+    df_est_completo.loc[idx_restantes, 'Estoque_Atual'] = est_norm
 
     # Recalcular Demanda_Rede = soma(Demanda_Atual) por produto
     print("  - Recalculando Demanda_Rede...")
@@ -224,7 +250,7 @@ def consolidar_dados():
     # Universo de pares e produtos para referência estrita
     pares_universo = df_est_final[['Filial', 'Codigo_Produto']].drop_duplicates()
     pares_com_estoque = df_est_final[df_est_final['Estoque_Atual'] > 0][
-        ['Filial', 'Codigo_Produto', 'Estoque_Atual', 'Demanda_Atual']
+        ['Filial', 'Codigo_Produto', 'Estoque_Atual', 'Demanda_Atual', 'Demanda_Ponderada']
     ].copy()
 
     # =========================================================================
@@ -242,22 +268,29 @@ def consolidar_dados():
     pares_selecionados = pares_com_estoque.iloc[indices_pares_av].copy()
 
     n_pares_2_lotes = n_av - n_pares_av  # 10.730 pares terão 2 lotes
-    idx_2_lotes = pares_selecionados.index[:n_pares_2_lotes]
-    idx_1_lote = pares_selecionados.index[n_pares_2_lotes:]
+    pares_ge2 = pares_selecionados[pares_selecionados['Estoque_Atual'] >= 2]
+    idx_2_lotes = pares_ge2.index[:n_pares_2_lotes]
+    idx_1_lote = pares_selecionados.index.difference(idx_2_lotes)
 
     pares_1 = pares_selecionados.loc[idx_1_lote].copy()
     pares_2a = pares_selecionados.loc[idx_2_lotes].copy()
     pares_2b = pares_selecionados.loc[idx_2_lotes].copy()
 
-    # Cálculo dos lotes com soma <= Estoque_Atual
+    # Cálculo dos lotes com garantia estrita de soma <= Estoque_Atual
     # Lote 1 para pares de 1 lote:
-    est_max_1 = np.maximum(1, np.floor(pares_1['Estoque_Atual'] * 0.7).astype(int))
+    est_max_1 = np.minimum(pares_1['Estoque_Atual'], np.maximum(1, np.floor(pares_1['Estoque_Atual'] * 0.7).astype(int)))
     pares_1['Estoque_Lote'] = [random.randint(1, m) for m in est_max_1]
 
     # Lotes para pares de 2 lotes:
-    est_max_2 = np.maximum(2, np.floor(pares_2a['Estoque_Atual'] * 0.7).astype(int))
-    lotes_a = [random.randint(1, max(1, m // 2)) for m in est_max_2]
-    lotes_b = [random.randint(1, max(1, m - la)) for m, la in zip(est_max_2, lotes_a)]
+    est_max_2 = np.minimum(pares_2a['Estoque_Atual'], np.maximum(2, np.floor(pares_2a['Estoque_Atual'] * 0.7).astype(int)))
+    lotes_a = []
+    lotes_b = []
+    for tot in est_max_2:
+        la = random.randint(1, max(1, tot - 1))
+        lb = random.randint(1, max(1, tot - la))
+        lotes_a.append(la)
+        lotes_b.append(lb)
+
     pares_2a['Estoque_Lote'] = lotes_a
     pares_2b['Estoque_Lote'] = lotes_b
 
@@ -479,40 +512,62 @@ def consolidar_dados():
     # =========================================================================
     print("\n[9/12] Gerando nova tabela fMovimentacao...")
     # Linhas para todos os pares com Estoque_Atual > 0
-    df_mov = pares_com_estoque[['Filial', 'Codigo_Produto', 'Demanda_Atual']].copy()
+    df_mov = pares_com_estoque[['Filial', 'Codigo_Produto', 'Estoque_Atual', 'Demanda_Atual', 'Demanda_Ponderada']].copy()
     n_mov = len(df_mov)
 
+    # Identificar perfis operacionais (§3.6)
+    daily_dem = np.maximum(0.05, df_mov['Demanda_Ponderada'] / 30.0)
+    cobertura = df_mov['Estoque_Atual'] / daily_dem
+
+    is_sem_dem_exc = (df_mov['Demanda_Atual'] == 0) & (df_mov['Estoque_Atual'] > 1)
+    is_sem_dem_unit = (df_mov['Demanda_Atual'] == 0) & (df_mov['Estoque_Atual'] <= 1)
+    is_excesso = (df_mov['Demanda_Atual'] > 0) & (cobertura > 45.0)
+    is_critico = (df_mov['Demanda_Atual'] > 0) & (cobertura < 3.0)
+    is_saudavel = (df_mov['Demanda_Atual'] > 0) & (~is_excesso) & (~is_critico)
+
     # 1. Ultima_Venda sintética:
-    # se Demanda_Atual > 0 -> REF - randint(0, 30)d
-    # senão: 12% nulo ("nunca vendeu") e 88% -> REF - (31 + Exp(120))d (máx. 3 anos)
-    tem_demanda = df_mov['Demanda_Atual'] > 0
-    dias_venda = np.zeros(n_mov, dtype=object)
+    datas_venda = np.zeros(n_mov, dtype=object)
 
-    # Pares com demanda
-    dias_com_dem = np.random.randint(0, 31, size=tem_demanda.sum())
-    datas_com_dem = (dt_ref - pd.to_timedelta(dias_com_dem, unit='D')).strftime('%Y-%m-%d')
-    dias_venda[tem_demanda] = datas_com_dem
+    # Sem demanda com estoque excedente: 15% nunca vendeu (None), 85% antiga [60..600 dias]
+    n_sde = is_sem_dem_exc.sum()
+    n_sde_nunca = int(n_sde * 0.15)
+    n_sde_antiga = n_sde - n_sde_nunca
+    exp_dias_e = 60 + np.random.exponential(scale=120, size=n_sde_antiga)
+    exp_dias_e = np.clip(exp_dias_e, 60, 3 * 365).astype(int)
+    datas_sde = [None] * n_sde_nunca + list((dt_ref - pd.to_timedelta(exp_dias_e, unit='D')).strftime('%Y-%m-%d'))
+    random.shuffle(datas_sde)
+    datas_venda[is_sem_dem_exc] = datas_sde
 
-    # Pares sem demanda
-    sem_dem_count = (~tem_demanda).sum()
-    n_nunca = int(sem_dem_count * 0.12)
-    n_antiga = sem_dem_count - n_nunca
+    # Sem demanda unitário: 10% nunca vendeu (None), 90% antiga [35..180 dias]
+    n_sdu = is_sem_dem_unit.sum()
+    n_sdu_nunca = int(n_sdu * 0.10)
+    n_sdu_antiga = n_sdu - n_sdu_nunca
+    dias_sdu = np.random.randint(35, 181, size=n_sdu_antiga)
+    datas_sdu = [None] * n_sdu_nunca + list((dt_ref - pd.to_timedelta(dias_sdu, unit='D')).strftime('%Y-%m-%d'))
+    random.shuffle(datas_sdu)
+    datas_venda[is_sem_dem_unit] = datas_sdu
 
-    exp_dias = 31 + np.random.exponential(scale=120, size=n_antiga)
-    exp_dias = np.clip(exp_dias, 31, 3 * 365).astype(int)
-    datas_antigas = (dt_ref - pd.to_timedelta(exp_dias, unit='D')).strftime('%Y-%m-%d')
+    # Excesso ativo: vendas entre 20 e 80 dias atrás
+    n_exc = is_excesso.sum()
+    dias_exc = np.random.randint(20, 81, size=n_exc)
+    datas_venda[is_excesso] = (dt_ref - pd.to_timedelta(dias_exc, unit='D')).strftime('%Y-%m-%d')
 
-    sem_dem_vals = [None] * n_nunca + list(datas_antigas)
-    random.shuffle(sem_dem_vals)
-    dias_venda[~tem_demanda] = sem_dem_vals
+    # Ruptura crítica: vendas muito recentes (0 a 2 dias atrás)
+    n_crit = is_critico.sum()
+    dias_crit = np.random.randint(0, 3, size=n_crit)
+    datas_venda[is_critico] = (dt_ref - pd.to_timedelta(dias_crit, unit='D')).strftime('%Y-%m-%d')
 
-    df_mov['Venda_Sintetica'] = dias_venda
+    # Saudável / normal: vendas recentes (0 a 6 dias atrás)
+    n_saud = is_saudavel.sum()
+    dias_saud = np.random.randint(0, 7, size=n_saud)
+    datas_venda[is_saudavel] = (dt_ref - pd.to_timedelta(dias_saud, unit='D')).strftime('%Y-%m-%d')
 
-    # Cruzar com fVendas para max(venda_sintetica, venda_real)
+    df_mov['Venda_Sintetica'] = datas_venda
+
+    # Cruzar com fVendas
     print("  - Vinculando últimas vendas reais de fVendas...")
     vendas_reais = df_vendas_final.groupby(['Filial', 'Codigo_Produto'])['Data_Venda'].max().reset_index()
     vendas_reais = vendas_reais.rename(columns={'Data_Venda': 'Venda_Real'})
-
     df_mov = df_mov.merge(vendas_reais, on=['Filial', 'Codigo_Produto'], how='left')
 
     def combinar_vendas(row):
@@ -528,16 +583,40 @@ def consolidar_dados():
 
     df_mov['Ultima_Venda'] = df_mov.apply(combinar_vendas, axis=1)
 
-    # 2. Ultima_Entrada:
-    # REF - randint(5, 420)d; 3% nulo
-    n_ent_nulo = int(n_mov * 0.03)
-    n_ent_valido = n_mov - n_ent_nulo
+    # 2. Ultima_Entrada sintética:
+    datas_entrada = np.zeros(n_mov, dtype=object)
 
-    dias_entrada = np.random.randint(5, 421, size=n_ent_valido)
-    datas_entrada = (dt_ref - pd.to_timedelta(dias_entrada, unit='D')).strftime('%Y-%m-%d')
-    lista_entradas = [None] * n_ent_nulo + list(datas_entrada)
-    random.shuffle(lista_entradas)
-    df_mov['Ultima_Entrada'] = lista_entradas
+    # Sem demanda excedente: entradas antigas (90 a 365 dias atrás) e 5% nulo
+    n_sde_ent_nulo = int(n_sde * 0.05)
+    n_sde_ent_val = n_sde - n_sde_ent_nulo
+    dias_sde_ent = np.random.randint(90, 366, size=n_sde_ent_val)
+    datas_sde_ent = [None] * n_sde_ent_nulo + list((dt_ref - pd.to_timedelta(dias_sde_ent, unit='D')).strftime('%Y-%m-%d'))
+    random.shuffle(datas_sde_ent)
+    datas_entrada[is_sem_dem_exc] = datas_sde_ent
+
+    # Sem demanda unitário: 55% entrada recente [15..50 dias] (garantindo meses_ue < 4), 45% entrada antiga [130..300 dias]
+    n_sdu_rec = int(n_sdu * 0.55)
+    n_sdu_ant = n_sdu - n_sdu_rec
+    dias_sdu_ent = np.concatenate([
+        np.random.randint(15, 51, size=n_sdu_rec),
+        np.random.randint(130, 301, size=n_sdu_ant)
+    ])
+    np.random.shuffle(dias_sdu_ent)
+    datas_entrada[is_sem_dem_unit] = (dt_ref - pd.to_timedelta(dias_sdu_ent, unit='D')).strftime('%Y-%m-%d')
+
+    # Excesso ativo: entradas entre 25 e 180 dias atrás
+    dias_exc_ent = np.random.randint(25, 181, size=n_exc)
+    datas_entrada[is_excesso] = (dt_ref - pd.to_timedelta(dias_exc_ent, unit='D')).strftime('%Y-%m-%d')
+
+    # Ruptura crítica: atraso de reposição (30 a 75 dias atrás)
+    dias_crit_ent = np.random.randint(30, 76, size=n_crit)
+    datas_entrada[is_critico] = (dt_ref - pd.to_timedelta(dias_crit_ent, unit='D')).strftime('%Y-%m-%d')
+
+    # Saudável: reposição regular e recente (5 a 25 dias atrás)
+    dias_saud_ent = np.random.randint(5, 26, size=n_saud)
+    datas_entrada[is_saudavel] = (dt_ref - pd.to_timedelta(dias_saud_ent, unit='D')).strftime('%Y-%m-%d')
+
+    df_mov['Ultima_Entrada'] = datas_entrada
 
     cols_mov = ['Filial', 'Codigo_Produto', 'Ultima_Venda', 'Ultima_Entrada']
     df_mov_final = df_mov[cols_mov].copy()
