@@ -1,0 +1,21 @@
+# Sensitive / Raw Data
+Bases/
+Dados_Anonimizados/
+Dados_Consolidados/
+*.xlsx
+Score_Risco_Perda*.ipynb
+
+# Environment & Secrets
+.env*
+!.env.example
+
+# Node / JS
+node_modules/
+dist/
+
+# Python
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+venv/

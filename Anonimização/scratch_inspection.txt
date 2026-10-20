@@ -1,0 +1,84 @@
+=== SHEET: A vencer (75730 rows, 27 cols) ===
+COLUMNS:
+['FILIAL', 'ZJ1_ID', 'CÓDIGO', 'EAN', 'VENCIMENTO', 'RESOLVIDO', 'ZJ1_LOTE', 'IMPRESSÃO', 'DESCRIÇÃO', 'DEMANDA', 'ESTOQUE', 'VENCENDO REAL', 'Custo', 'TOTAL AV', 'PRINCIPIO ATIVO', 'REPOSICIONAR', 'CÓDIGO REPOSICIONAR', 'FILTRO REPOSICIONAR', 'COMPRADOR', 'VALIDADE', 'VENCENDO', 'preco_venda', 'FORNECEDOR', 'QUANTIDADE', 'QUANTIDADE VENDIDA', 'DESC COD', 'CHAVE']
+SAMPLE ROW 0:
+{'FILIAL': 66, 'ZJ1_ID': 64205, 'CÓDIGO': 305170, 'EAN': '305170V00064205', 'VENCIMENTO': datetime.datetime(2026, 10, 1, 0, 0), 'RESOLVIDO': nan, 'ZJ1_LOTE': '2423781', 'IMPRESSÃO': NaT, 'DESCRIÇÃO': 'BEPANTRIZ POMADA 30GR', 'DEMANDA': 18.0, 'ESTOQUE': 12, 'VENCENDO REAL': 1, 'Custo': 4.73, 'TOTAL AV': 4.73, 'PRINCIPIO ATIVO': 'DEXPANTENOL', 'REPOSICIONAR': '(305170) Descrição: BEPANTRIZ POMADA 30GR', 'CÓDIGO REPOSICIONAR': 305170.0, 'FILTRO REPOSICIONAR': 'NÃO', 'COMPRADOR': 'FABIO', 'VALIDADE': 'OUT/2026', 'VENCENDO': 1, 'preco_venda': 29.87, 'FORNECEDOR': 'CIMED', 'QUANTIDADE': 1, 'QUANTIDADE VENDIDA': nan, 'DESC COD': '305170 - BEPANTRIZ POMADA 30GR', 'CHAVE': 6664205}
+--------------------------------------------------
+
+=== SHEET: Vendas AV (53444 rows, 16 cols) ===
+COLUMNS:
+['FILIAL', 'ID', 'DATA_VENDA', 'TIPO', 'QUANTIDADE_VENDIDA', 'DOCUMENTO', 'VALOR_UNITARIO', 'VALOR_TOTAL', 'PDV_PASSADO', 'NUMERO_ITEM_DOCUMENTO', 'VENDEDOR', 'DT_VENDA', 'CHAVE', 'Mesclado', 'Dia da semana', 'Num Dia']
+SAMPLE ROW 0:
+{'FILIAL': 47, 'ID': 17218, 'DATA_VENDA': Timestamp('2026-03-02 00:00:00'), 'TIPO': 'V', 'QUANTIDADE_VENDIDA': 1, 'DOCUMENTO': 2051, 'VALOR_UNITARIO': 6.87, 'VALOR_TOTAL': 6.87, 'PDV_PASSADO': 1.0, 'NUMERO_ITEM_DOCUMENTO': 1, 'VENDEDOR': '2417-VANESSA CARNEIR', 'DT_VENDA': 'MAR/2026', 'CHAVE': 4717218, 'Mesclado': '1ª Semana', 'Dia da semana': 'seg', 'Num Dia': 1}
+--------------------------------------------------
+
+=== SHEET: Vendedores (6187 rows, 2 cols) ===
+COLUMNS:
+['ID_VENDEDOR', 'VENDEDOR']
+SAMPLE ROW 0:
+{'ID_VENDEDOR': 666, 'VENDEDOR': 'ABELA NEIDE DUARTE DA CRUZ'}
+--------------------------------------------------
+
+=== SHEET: Filial (80 rows, 12 cols) ===
+COLUMNS:
+['Filial', 'OFS', 'Supervisor', 'Endereço', 'Cidade', 'Estado', 'CNPJ', 'Gerentes', 'NOME FILIAL', 'Abertura', 'Fechamento', 'Farmacia Popular']
+SAMPLE ROW 0:
+{'Filial': 1, 'OFS': 'OFS RJ LTDA. - FILIAL 01', 'Supervisor': 'LÍDIA', 'Endereço': 'Rua da Conceição nº 95 - Centro – Niterói – RJ', 'Cidade': 'Niterói', 'Estado': 'RJ', 'CNPJ': 4779685000258, 'Gerentes': 'ANA CAROLINA', 'NOME FILIAL': 'FILIAL 01', 'Abertura': '0,291666667', 'Fechamento': '0,875', 'Farmacia Popular': 'SIM'}
+--------------------------------------------------
+
+=== SHEET: Divergências Inventário (279305 rows, 15 cols) ===
+COLUMNS:
+['FILIAL', 'CODIGO', 'DESCRICAO', 'SALDO_ANTES', 'SALDO_DEPOIS', 'DIFERENCA', 'VALOR_ANTES', 'VALOR_DIF', 'DIF_REAL', 'MAQ', 'OBS', 'DATA', 'TIPO DIV', 'Chave', 'IDENTIFICAÇÃO']
+SAMPLE ROW 0:
+{'FILIAL': 2.0, 'CODIGO': 533580.0, 'DESCRICAO': 'PREDNISOLONA GER 20MG C/10 COM', 'SALDO_ANTES': 0.0, 'SALDO_DEPOIS': 8.0, 'DIFERENCA': -8.0, 'VALOR_ANTES': 0.0, 'VALOR_DIF': 47.04, 'DIF_REAL': 47.04, 'MAQ': nan, 'OBS': nan, 'DATA': Timestamp('2026-01-12 00:00:00'), 'TIPO DIV': 'SOBRA', 'Chave': '2_12/01/2026', 'IDENTIFICAÇÃO': 'SEM IDENTIFICAÇÃO'}
+--------------------------------------------------
+
+=== SHEET: Perdas Totais (169487 rows, 26 cols) ===
+COLUMNS:
+['MÊS', 'FILIAL', 'EMISSAO', 'C5_NOTA', 'C5_MENPAD', 'CÓDIGO PRODUTO', 'DESCRIÇÃO', 'QUANTIDADE', 'C6_PRCVEN', 'PERDA', 'B1_GRUPO', 'GRUPO', 'A2_COD', 'FORNECEDOR', 'COMPRADOR', 'Mês_Num', 'Nome do Mês', 'Ano', 'VENCENDO', 'C5_SERIE', 'NEGOCIAÇÃO', 'STATUS', 'OBS', 'NF', 'BONIFICAÇÃO', 'B2_CM1']
+SAMPLE ROW 0:
+{'MÊS': Timestamp('2023-02-01 00:00:00'), 'FILIAL': 80.0, 'EMISSAO': '06/03/2023', 'C5_NOTA': 627.0, 'C5_MENPAD': 'DANIFICADO', 'CÓDIGO PRODUTO': 344978.0, 'DESCRIÇÃO': 'AG BANHO MURIEL FL CEREJEI 250', 'QUANTIDADE': 1.0, 'C6_PRCVEN': 11.56, 'PERDA': 11.56, 'B1_GRUPO': 'C05', 'GRUPO': 'COLONIA', 'A2_COD': 'M1319', 'FORNECEDOR': 'MURIEL', 'COMPRADOR': 'ALEXIA', 'Mês_Num': 2, 'Nome do Mês': 'fevereiro', 'Ano': 2023, 'VENCENDO': nan, 'C5_SERIE': 1.0, 'NEGOCIAÇÃO': nan, 'STATUS': nan, 'OBS': 'CONDOR S.A.', 'NF': nan, 'BONIFICAÇÃO': nan, 'B2_CM1': nan}
+--------------------------------------------------
+
+=== SHEET: Relatório Risco (308788 rows, 44 cols) ===
+COLUMNS:
+['Filial', 'Código', 'Descrição', 'Demanda Atual', 'Estoque Atual', 'Ultima Entrada', 'Ultima venda', 'Classificação de risco', 'Pontuação de risco', 'indice_excesso', 'Vendas do principio ativo na filial', 'Vendas do principio ativo na rede', 'Filial Maior venda', 'Venda da maior filial, mês anterior', 'A2_NOME', 'b1_grupo', 'custo', 'comprador', 'Perdido', 'Total A vencer', 'Vendas sku rede mês passado', 'vendas_filial_atual', 'Demanda Rede', 'Vencendo', 'Vencimento', 'acao_recomendada', 'filtro_venda', 'filtro_entrada', 'Colocar por cima do', 'MG', 'Principio ativo', 'Zona', 'ESTOQUE', 'CUSTODADOS', 'VALOR TOTAL', 'FILTRAO VENDA', 'Demanda Ponderada', 'Dias de Estoque', 'Demanda Rede Ponderada', 'faceamento_trade', 'faceamento_sugerido', 'faceamento_iqvia', 'faceamento_gc', 'faceamento_especial']
+SAMPLE ROW 0:
+{'Filial': 53, 'Código': 497040, 'Descrição': 'KART R/C ELETRICO BRANCO 2900', 'Demanda Atual': 0.0, 'Estoque Atual': 1, 'Ultima Entrada': Timestamp('2024-04-29 00:00:00'), 'Ultima venda': Timestamp('2024-02-05 00:00:00'), 'Classificação de risco': '🟡 MÉDIO ALTO RISCO', 'Pontuação de risco': 0.294175632225354, 'indice_excesso': 'SUPER EXCESSO', 'Vendas do principio ativo na filial': nan, 'Vendas do principio ativo na rede': nan, 'Filial Maior venda': 76.0, 'Venda da maior filial, mês anterior': 0, 'A2_NOME': 'BANDEIRANTE', 'b1_grupo': 'KT', 'custo': 1481.78, 'comprador': 'SIMONE', 'Perdido': 0, 'Total A vencer': 0, 'Vendas sku rede mês passado': 0, 'vendas_filial_atual': nan, 'Demanda Rede': 0.0, 'Vencendo': nan, 'Vencimento': nan, 'acao_recomendada': nan, 'filtro_venda': 365, 'filtro_entrada': 180, 'Colocar por cima do': nan, 'MG': nan, 'Principio ativo': nan, 'Zona': nan, 'ESTOQUE': 1, 'CUSTODADOS': 1481.78, 'VALOR TOTAL': 1481.78, 'FILTRAO VENDA': '180', 'Demanda Ponderada': '0', 'Dias de Estoque': nan, 'Demanda Rede Ponderada': '0', 'faceamento_trade': 0, 'faceamento_sugerido': 0, 'faceamento_iqvia': 0, 'faceamento_gc': 0, 'faceamento_especial': 0}
+--------------------------------------------------
+
+=== SHEET: Resultado Inventário (1824 rows, 36 cols) ===
+COLUMNS:
+['FAROL', 'FILIAL', 'DATA', 'INVENT. ANTER', 'DIAS', 'RESULTADO $ GERAL - ESTOQUE ANTERIOR', 'RESULTADO $ GERAL- NOVO ESTOQUE', 'RESULTADO $ GERAL - DIFER', 'RESULTADO $ GERAL - FALTOU', 'RESULTADO $ GERAL - PASSOU', 'RESULTADO $ MEDIC. - ESTOQUE ANTERIOR', 'RESULTADO $ MEDIC. - FALTOU', 'RESULTADO $ MEDIC. - PASSOU', 'RESULTADO $ PERF. - ESTOQUE ANTERIOR', 'RESULTADO $ PERF. - FALTOU', 'RESULTADO $ PERF. - PASSOU', 'RESULTADO % GERAL - FALTOU', 'RESULTADO % GERAL -PASSOU', 'RESULTADO % GERAL - DIFER', 'RESULTADO % MEDIC. - FALTOU', 'RESULTADO % MEDIC. - PASSOU', 'RESULTADO % MEDIC. - DIFER', 'RESULTADO % PERF. - FALTOU', 'RESULTADO % PERF. - PASSOU', 'RESULTADO % PERF. - DIFER', 'RESULTADO ABSOLUTO - MEDIC.', 'RESULTADO ABSOLUTO - PERF.', 'RESULTADO ABSOLUTO - GERAL', 'MÉTODO', 'AUDITADO', 'TEMPO INV. - AUD', 'UltimoIVT', 'É o ultimo', 'ULTIMO ABS RESULT', 'CONDIÇÃO', 'CHAVE']
+SAMPLE ROW 0:
+{'FAROL': 'SIM', 'FILIAL': 3, 'DATA': Timestamp('2019-11-05 00:00:00'), 'INVENT. ANTER': Timestamp('2019-10-08 00:00:00'), 'DIAS': -28.0, 'RESULTADO $ GERAL - ESTOQUE ANTERIOR': 314275.0, 'RESULTADO $ GERAL- NOVO ESTOQUE': 313967.0, 'RESULTADO $ GERAL - DIFER': -308.0, 'RESULTADO $ GERAL - FALTOU': -8179.0, 'RESULTADO $ GERAL - PASSOU': 7871.0, 'RESULTADO $ MEDIC. - ESTOQUE ANTERIOR': 231091.0, 'RESULTADO $ MEDIC. - FALTOU': -3813.0, 'RESULTADO $ MEDIC. - PASSOU': 3553.0, 'RESULTADO $ PERF. - ESTOQUE ANTERIOR': 83184.0, 'RESULTADO $ PERF. - FALTOU': -4366.0, 'RESULTADO $ PERF. - PASSOU': 4318.0, 'RESULTADO % GERAL - FALTOU': -0.026024978124254236, 'RESULTADO % GERAL -PASSOU': 0.025044944714024343, 'RESULTADO % GERAL - DIFER': -0.0009800334102298943, 'RESULTADO % MEDIC. - FALTOU': -0.016499993509050546, 'RESULTADO % MEDIC. - PASSOU': 0.0153748956038963, 'RESULTADO % MEDIC. - DIFER': -0.0011250979051542465, 'RESULTADO % PERF. - FALTOU': -0.05248605501057896, 'RESULTADO % PERF. - PASSOU': 0.051909020965570304, 'RESULTADO % PERF. - DIFER': -0.0005770340450086555, 'RESULTADO ABSOLUTO - MEDIC.': 0.03187488911294685, 'RESULTADO ABSOLUTO - PERF.': 0.10439507597614926, 'RESULTADO ABSOLUTO - GERAL': 0.051069922838278575, 'MÉTODO': 'OFS', 'AUDITADO': NaT, 'TEMPO INV. - AUD': nan, 'UltimoIVT': Timestamp('2026-06-01 00:00:00'), 'É o ultimo': 'NÃO', 'ULTIMO ABS RESULT': '0,000980033', 'CONDIÇÃO': 'OK', 'CHAVE': '3_05/11/2019'}
+--------------------------------------------------
+
+=== SHEET: Estoque Demanda (1000000 rows, 6 cols) ===
+COLUMNS:
+['FILIAL', 'COD_PRD', 'DEMANDA_ATUAL', 'ESTOQUE_ATUAL', 'DEMANDA REDE', 'DEMANDA_PONDERADA']
+SAMPLE ROW 0:
+{'FILIAL': 11.0, 'COD_PRD': 35.0, 'DEMANDA_ATUAL': 0.0, 'ESTOQUE_ATUAL': 0.0, 'DEMANDA REDE': 0.0, 'DEMANDA_PONDERADA': 0.0}
+--------------------------------------------------
+
+=== SHEET: Dados Produtos (166679 rows, 12 cols) ===
+COLUMNS:
+['Código', 'Descrição', 'CATEGORIA', 'FORNECEDOR', 'comprador', 'custo', 'cod_principio_ativ', 'Principio ativo', 'Zona', 'ENDEREÇO', 'Grupo', 'B1_GRUPO']
+SAMPLE ROW 0:
+{'Código': 194620, 'Descrição': 'PAGAO MENINO S. MAGICO REF 930', 'CATEGORIA': 'MODA', 'FORNECEDOR': 'SONHO MAGICO', 'comprador': 'SIMONE', 'custo': nan, 'cod_principio_ativ': nan, 'Principio ativo': nan, 'Zona': nan, 'ENDEREÇO': 'NÃO ENDEREÇADO', 'Grupo': 'G2K', 'B1_GRUPO': 'MACACAO/PAGAO/SAIDA'}
+--------------------------------------------------
+
+=== SHEET: Bonificação (1506 rows, 6 cols) ===
+COLUMNS:
+['DATA', 'COMPRADOR', 'FORNECEDOR', 'NF', 'VALOR', 'OBS']
+SAMPLE ROW 0:
+{'DATA': Timestamp('2024-08-01 00:00:00'), 'COMPRADOR': 'DENISE', 'FORNECEDOR': 'CCM INDUSTRIA E COM DE PROD DESCARTAVEIS', 'NF': 46425.0, 'VALOR': 922.61, 'OBS': nan}
+--------------------------------------------------
+
+=== SHEET: Bravo Export Summary (16 rows, 4 cols) ===
+COLUMNS:
+['Exported with Bravo for Power BI', 'Unnamed: 1', 'Unnamed: 2', 'Unnamed: 3']
+SAMPLE ROW 0:
+{'Exported with Bravo for Power BI': 'Version 1.0.13 (build 1.0.9517.31194)', 'Unnamed: 1': nan, 'Unnamed: 2': nan, 'Unnamed: 3': nan}
+--------------------------------------------------
+

@@ -1,0 +1,15 @@
+A vencer: ~75730 rows
+Vendas AV: ~53444 rows
+Vendedores: ~6187 rows
+Filial: ~80 rows
+Divergências Inventário: ~279305 rows
+Perdas Totais: ~169487 rows
+Relatório Risco: ~308788 rows
+Resultado Inventário: ~1824 rows
+Estoque Demanda: ~1000000 rows
+Dados Produtos: ~166679 rows
+Bonificação: ~1506 rows
+Bravo Export Summary: ~16 rows
+cosmetics.csv: 1472 rows
+indian_pharmaceutical_products_clean.csv: 253973 rows
+global_ecommerce_sales.csv: 2000 rows

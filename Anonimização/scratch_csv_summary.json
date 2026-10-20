@@ -1,0 +1,155 @@
+{
+  "cosmetics.csv": {
+    "cols": [
+      "Label",
+      "Brand",
+      "Name",
+      "Price",
+      "Rank",
+      "Ingredients",
+      "Combination",
+      "Dry",
+      "Normal",
+      "Oily",
+      "Sensitive"
+    ],
+    "sample": [
+      {
+        "Label": "Moisturizer",
+        "Brand": "LA MER",
+        "Name": "Crème de la Mer",
+        "Price": 175,
+        "Rank": 4.1,
+        "Ingredients": "Algae (Seaweed) Extract, Mineral Oil, Petrolatum, Glycerin, Isohexadecane, Microcrystalline Wax, Lanolin Alcohol, Citrus Aurantifolia (Lime) Extract, Sesamum Indicum (Sesame) Seed Oil, Eucalyptus Globulus (Eucalyptus) Leaf Oil, Sesamum Indicum (Sesame) Seed Powder, Medicago Sativa (Alfalfa) Seed Powder, Helianthus Annuus (Sunflower) Seedcake, Prunus Amygdalus Dulcis (Sweet Almond) Seed Meal, Sodium Gluconate, Copper Gluconate, Calcium Gluconate, Magnesium Gluconate, Zinc Gluconate, Magnesium Sulfate, Paraffin, Tocopheryl Succinate, Niacin, Water, Beta-Carotene, Decyl Oleate, Aluminum Distearate, Octyldodecanol, Citric Acid, Cyanocobalamin, Magnesium Stearate, Panthenol, Limonene, Geraniol, Linalool, Hydroxycitronellal, Citronellol, Benzyl Salicylate, Citral, Sodium Benzoate, Alcohol Denat., Fragrance.",
+        "Combination": 1,
+        "Dry": 1,
+        "Normal": 1,
+        "Oily": 1,
+        "Sensitive": 1
+      },
+      {
+        "Label": "Moisturizer",
+        "Brand": "SK-II",
+        "Name": "Facial Treatment Essence",
+        "Price": 179,
+        "Rank": 4.1,
+        "Ingredients": "Galactomyces Ferment Filtrate (Pitera), Butylene Glycol, Pentylene Glycol, Water, Sodium Benzoate, Methylparaben, Sorbic Acid.",
+        "Combination": 1,
+        "Dry": 1,
+        "Normal": 1,
+        "Oily": 1,
+        "Sensitive": 1
+      }
+    ]
+  },
+  "indian_pharmaceutical_products_clean.csv": {
+    "cols": [
+      "product_id",
+      "brand_name",
+      "manufacturer",
+      "price_inr",
+      "is_discontinued",
+      "dosage_form",
+      "pack_size",
+      "pack_unit",
+      "num_active_ingredients",
+      "primary_ingredient",
+      "primary_strength",
+      "active_ingredients",
+      "therapeutic_class",
+      "packaging_raw",
+      "manufacturer_raw"
+    ],
+    "sample": [
+      {
+        "product_id": 1,
+        "brand_name": "Augmentin 625 Duo Tablet",
+        "manufacturer": "Glaxo SmithKline Pharmaceuticals Ltd",
+        "price_inr": 223.42,
+        "is_discontinued": false,
+        "dosage_form": "tablet",
+        "pack_size": 10.0,
+        "pack_unit": "strip",
+        "num_active_ingredients": 2,
+        "primary_ingredient": "Amoxycillin",
+        "primary_strength": "500mg",
+        "active_ingredients": "[{'name': 'Amoxycillin', 'strength': '500mg', 'full_description': 'Amoxycillin  (500mg)'}, {'name': 'Clavulanic Acid', 'strength': '125mg', 'full_description': 'Clavulanic Acid (125mg)'}]",
+        "therapeutic_class": "antibiotic",
+        "packaging_raw": "strip of 10 tablets",
+        "manufacturer_raw": "Glaxo SmithKline Pharmaceuticals Ltd"
+      },
+      {
+        "product_id": 2,
+        "brand_name": "Azithral 500 Tablet",
+        "manufacturer": "Alembic Pharmaceuticals Ltd",
+        "price_inr": 132.36,
+        "is_discontinued": false,
+        "dosage_form": "tablet",
+        "pack_size": 5.0,
+        "pack_unit": "strip",
+        "num_active_ingredients": 1,
+        "primary_ingredient": "Azithromycin",
+        "primary_strength": "500mg",
+        "active_ingredients": "[{'name': 'Azithromycin', 'strength': '500mg', 'full_description': 'Azithromycin (500mg)'}]",
+        "therapeutic_class": "antibiotic",
+        "packaging_raw": "strip of 5 tablets",
+        "manufacturer_raw": "Alembic Pharmaceuticals Ltd"
+      }
+    ]
+  },
+  "global_ecommerce_sales.csv": {
+    "cols": [
+      "Order_ID",
+      "Order_Date",
+      "Customer_Name",
+      "Customer_Segment",
+      "Country",
+      "Region",
+      "Product_Category",
+      "Product_Name",
+      "Quantity",
+      "Unit_Price",
+      "Discount_Percent",
+      "Total_Sales",
+      "Shipping_Cost",
+      "Profit",
+      "Payment_Method"
+    ],
+    "sample": [
+      {
+        "Order_ID": "ORD-11121",
+        "Order_Date": "2023-01-02",
+        "Customer_Name": "Karen Suzuki",
+        "Customer_Segment": "Corporate",
+        "Country": "United States",
+        "Region": "North America",
+        "Product_Category": "Technology",
+        "Product_Name": "Wireless Bluetooth Headphones",
+        "Quantity": 3,
+        "Unit_Price": 99.43,
+        "Discount_Percent": 0,
+        "Total_Sales": 298.29,
+        "Shipping_Cost": 9.31,
+        "Profit": 124.92,
+        "Payment_Method": "Cash on Delivery"
+      },
+      {
+        "Order_ID": "ORD-11244",
+        "Order_Date": "2023-01-02",
+        "Customer_Name": "John Johansson",
+        "Customer_Segment": "Corporate",
+        "Country": "Spain",
+        "Region": "Europe",
+        "Product_Category": "Technology",
+        "Product_Name": "Mechanical Gaming Keyboard",
+        "Quantity": 4,
+        "Unit_Price": 97.93,
+        "Discount_Percent": 20,
+        "Total_Sales": 313.38,
+        "Shipping_Cost": 14.31,
+        "Profit": 83.62,
+        "Payment_Method": "Cash on Delivery"
+      }
+    ]
+  }
+}

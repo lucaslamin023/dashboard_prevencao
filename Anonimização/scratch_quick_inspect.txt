@@ -1,0 +1,48 @@
+=== SHEET: A vencer ===
+COLS (27): ('FILIAL', 'ZJ1_ID', 'CÓDIGO', 'EAN', 'VENCIMENTO', 'RESOLVIDO', 'ZJ1_LOTE', 'IMPRESSÃO', 'DESCRIÇÃO', 'DEMANDA', 'ESTOQUE', 'VENCENDO REAL', 'Custo', 'TOTAL AV', 'PRINCIPIO ATIVO', 'REPOSICIONAR', 'CÓDIGO REPOSICIONAR', 'FILTRO REPOSICIONAR', 'COMPRADOR', 'VALIDADE', 'VENCENDO', 'preco_venda', 'FORNECEDOR', 'QUANTIDADE', 'QUANTIDADE VENDIDA', 'DESC COD', 'CHAVE')
+SAMPLE ROW 1: (66, 64205, 305170, '305170V00064205', datetime.datetime(2026, 10, 1, 0, 0), '', '2423781', None, 'BEPANTRIZ POMADA 30GR', 18, 12, 1, 4.73, 4.73, 'DEXPANTENOL', '(305170) Descrição: BEPANTRIZ POMADA 30GR', 305170, 'NÃO', 'FABIO', 'OUT/2026', 1, 29.87, 'CIMED', 1, None, '305170 - BEPANTRIZ POMADA 30GR', 6664205)
+
+=== SHEET: Vendas AV ===
+COLS (16): ('FILIAL', 'ID', 'DATA_VENDA', 'TIPO', 'QUANTIDADE_VENDIDA', 'DOCUMENTO', 'VALOR_UNITARIO', 'VALOR_TOTAL', 'PDV_PASSADO', 'NUMERO_ITEM_DOCUMENTO', 'VENDEDOR', 'DT_VENDA', 'CHAVE', 'Mesclado', 'Dia da semana', 'Num Dia')
+SAMPLE ROW 1: (47, 17218, datetime.datetime(2026, 3, 2, 0, 0), 'V', 1, '000002051', 6.87, 6.87, '0001', '01', '2417-VANESSA CARNEIR', 'MAR/2026', 4717218, '1ª Semana', 'seg', 1)
+
+=== SHEET: Vendedores ===
+COLS (2): ('ID_VENDEDOR', 'VENDEDOR')
+SAMPLE ROW 1: (666, 'ABELA NEIDE DUARTE DA CRUZ')
+
+=== SHEET: Filial ===
+COLS (12): ('Filial', 'OFS', 'Supervisor', 'Endereço', 'Cidade', 'Estado', 'CNPJ', 'Gerentes', 'NOME FILIAL', 'Abertura', 'Fechamento', 'Farmacia Popular')
+SAMPLE ROW 1: (1, 'OFS RJ LTDA. - FILIAL 01', 'LÍDIA', 'Rua da Conceição nº 95 - Centro – Niterói – RJ', 'Niterói', 'RJ', '04779685000258', 'ANA CAROLINA', 'FILIAL 01', '0,291666667', '0,875', 'SIM')
+
+=== SHEET: Divergências Inventário ===
+COLS (15): ('FILIAL', 'CODIGO', 'DESCRICAO', 'SALDO_ANTES', 'SALDO_DEPOIS', 'DIFERENCA', 'VALOR_ANTES', 'VALOR_DIF', 'DIF_REAL', 'MAQ', 'OBS', 'DATA', 'TIPO DIV', 'Chave', 'IDENTIFICAÇÃO')
+SAMPLE ROW 1: (2, 533580, 'PREDNISOLONA GER 20MG C/10 COM', 0, 8, -8, 0, 47.04, 47.04, '', '', datetime.datetime(2026, 1, 12, 0, 0), 'SOBRA', '2_12/01/2026', 'SEM IDENTIFICAÇÃO')
+
+=== SHEET: Perdas Totais ===
+COLS (26): ('MÊS', 'FILIAL', 'EMISSAO', 'C5_NOTA', 'C5_MENPAD', 'CÓDIGO PRODUTO', 'DESCRIÇÃO', 'QUANTIDADE', 'C6_PRCVEN', 'PERDA', 'B1_GRUPO', 'GRUPO', 'A2_COD', 'FORNECEDOR', 'COMPRADOR', 'Mês_Num', 'Nome do Mês', 'Ano', 'VENCENDO', 'C5_SERIE', 'NEGOCIAÇÃO', 'STATUS', 'OBS', 'NF', 'BONIFICAÇÃO', 'B2_CM1')
+SAMPLE ROW 1: (datetime.datetime(2023, 2, 1, 0, 0), '80', '06/03/2023', 627, 'DANIFICADO', 344978, 'AG BANHO MURIEL FL CEREJEI 250', 1, 11.56, 11.56, 'C05', 'COLONIA', 'M1319', 'MURIEL', 'ALEXIA', 2, 'fevereiro', 2023, None, 1, None, None, 'CONDOR S.A.', None, None, None)
+
+=== SHEET: Relatório Risco ===
+COLS (44): ('Filial', 'Código', 'Descrição', 'Demanda Atual', 'Estoque Atual', 'Ultima Entrada', 'Ultima venda', 'Classificação de risco', 'Pontuação de risco', 'indice_excesso', 'Vendas do principio ativo na filial', 'Vendas do principio ativo na rede', 'Filial Maior venda', 'Venda da maior filial, mês anterior', 'A2_NOME', 'b1_grupo', 'custo', 'comprador', 'Perdido', 'Total A vencer', 'Vendas sku rede mês passado', 'vendas_filial_atual', 'Demanda Rede', 'Vencendo', 'Vencimento', 'acao_recomendada', 'filtro_venda', 'filtro_entrada', 'Colocar por cima do', 'MG', 'Principio ativo', 'Zona', 'ESTOQUE', 'CUSTODADOS', 'VALOR TOTAL', 'FILTRAO VENDA', 'Demanda Ponderada', 'Dias de Estoque', 'Demanda Rede Ponderada', 'faceamento_trade', 'faceamento_sugerido', 'faceamento_iqvia', 'faceamento_gc', 'faceamento_especial')
+SAMPLE ROW 1: (53, 497040, 'KART R/C ELETRICO BRANCO 2900', 0, 1, datetime.datetime(2024, 4, 29, 0, 0), datetime.datetime(2024, 2, 5, 0, 0), '🟡 MÉDIO ALTO RISCO', 0.294175632225354, 'SUPER EXCESSO', None, None, 76, 0, 'BANDEIRANTE', 'KT', 1481.78, 'SIMONE', 0, 0, 0, None, 0, None, None, None, 365, 180, None, None, None, None, 1, 1481.78, 1481.78, '180', '0', None, '0', '0', '0', '0', '0', '0')
+
+=== SHEET: Resultado Inventário ===
+COLS (36): ('FAROL', 'FILIAL', 'DATA', 'INVENT. ANTER', 'DIAS', 'RESULTADO $ GERAL - ESTOQUE ANTERIOR', 'RESULTADO $ GERAL- NOVO ESTOQUE', 'RESULTADO $ GERAL - DIFER', 'RESULTADO $ GERAL - FALTOU', 'RESULTADO $ GERAL - PASSOU', 'RESULTADO $ MEDIC. - ESTOQUE ANTERIOR', 'RESULTADO $ MEDIC. - FALTOU', 'RESULTADO $ MEDIC. - PASSOU', 'RESULTADO $ PERF. - ESTOQUE ANTERIOR', 'RESULTADO $ PERF. - FALTOU', 'RESULTADO $ PERF. - PASSOU', 'RESULTADO % GERAL - FALTOU', 'RESULTADO % GERAL -PASSOU', 'RESULTADO % GERAL - DIFER', 'RESULTADO % MEDIC. - FALTOU', 'RESULTADO % MEDIC. - PASSOU', 'RESULTADO % MEDIC. - DIFER', 'RESULTADO % PERF. - FALTOU', 'RESULTADO % PERF. - PASSOU', 'RESULTADO % PERF. - DIFER', 'RESULTADO ABSOLUTO - MEDIC.', 'RESULTADO ABSOLUTO - PERF.', 'RESULTADO ABSOLUTO - GERAL', 'MÉTODO', 'AUDITADO', 'TEMPO INV. - AUD', 'UltimoIVT', 'É o ultimo', 'ULTIMO ABS RESULT', 'CONDIÇÃO', 'CHAVE')
+SAMPLE ROW 1: ('SIM', 3, datetime.datetime(2019, 11, 5, 0, 0), datetime.datetime(2019, 10, 8, 0, 0), -28, 314275, 313967, -308, -8179, 7871, 231091, -3813, 3553, 83184, -4366, 4318, -0.026024978124254236, 0.025044944714024343, -0.0009800334102298943, -0.016499993509050546, 0.0153748956038963, -0.0011250979051542465, -0.05248605501057896, 0.051909020965570304, -0.0005770340450086555, 0.03187488911294685, 0.10439507597614926, 0.051069922838278575, 'OFS', None, None, datetime.datetime(2026, 6, 1, 0, 0), 'NÃO', '0,000980033', 'OK', '3_05/11/2019')
+
+=== SHEET: Estoque Demanda ===
+COLS (6): ('FILIAL', 'COD_PRD', 'DEMANDA_ATUAL', 'ESTOQUE_ATUAL', 'DEMANDA REDE', 'DEMANDA_PONDERADA')
+SAMPLE ROW 1: (11, 35, 0, 0, 0, 0)
+
+=== SHEET: Dados Produtos ===
+COLS (12): ('Código', 'Descrição', 'CATEGORIA', 'FORNECEDOR', 'comprador', 'custo', 'cod_principio_ativ', 'Principio ativo', 'Zona', 'ENDEREÇO', 'Grupo', 'B1_GRUPO')
+SAMPLE ROW 1: (194620, 'PAGAO MENINO S. MAGICO REF 930', 'MODA', 'SONHO MAGICO', 'SIMONE', None, '', None, None, 'NÃO ENDEREÇADO', 'G2K', 'MACACAO/PAGAO/SAIDA')
+
+=== SHEET: Bonificação ===
+COLS (6): ('DATA', 'COMPRADOR', 'FORNECEDOR', 'NF', 'VALOR', 'OBS')
+SAMPLE ROW 1: (datetime.datetime(2024, 8, 1, 0, 0), 'DENISE', 'CCM INDUSTRIA E COM DE PROD DESCARTAVEIS', 46425, 922.61, '')
+
+=== SHEET: Bravo Export Summary ===
+COLS (4): ('Exported with Bravo for Power BI', None, None, None)
+SAMPLE ROW 1: ('Version 1.0.13 (build 1.0.9517.31194)', None, None, None)
+
