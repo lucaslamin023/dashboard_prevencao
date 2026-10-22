@@ -4,7 +4,6 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-# Add parent directory to path to allow direct execution
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from etl.config import (
