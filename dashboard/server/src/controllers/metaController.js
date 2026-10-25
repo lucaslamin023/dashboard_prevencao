@@ -24,13 +24,24 @@ export async function getFiltros(req, res) {
 
     // 2. dFilial
     const filiaisDocs = await db.collection('dFilial').find({}, {
-      projection: { _id: 0, Filial: 1, Nome_Filial: 1, Regiao: 1, Estado: 1 }
+      projection: { _id: 0, Filial: 1, Nome_Filial: 1, Regiao: 1, Estado: 1, Supervisor: 1, Cidade: 1 }
     }).sort({ Filial: 1 }).toArray();
 
+    const supervisoresSet = new Set();
+    const cidadesSet = new Set();
+    const cidadesPorSupervisor = {};
     const regioesSet = new Set();
     const estadosPorRegiao = {};
 
     filiaisDocs.forEach((f) => {
+      if (f.Supervisor) {
+        supervisoresSet.add(f.Supervisor);
+        if (!cidadesPorSupervisor[f.Supervisor]) {
+          cidadesPorSupervisor[f.Supervisor] = new Set();
+        }
+        if (f.Cidade) cidadesPorSupervisor[f.Supervisor].add(f.Cidade);
+      }
+      if (f.Cidade) cidadesSet.add(f.Cidade);
       if (f.Regiao) {
         regioesSet.add(f.Regiao);
         if (!estadosPorRegiao[f.Regiao]) {
@@ -39,6 +50,11 @@ export async function getFiltros(req, res) {
         if (f.Estado) estadosPorRegiao[f.Regiao].add(f.Estado);
       }
     });
+
+    const cidadesFormatadas = {};
+    for (const [sup, cidSet] of Object.entries(cidadesPorSupervisor)) {
+      cidadesFormatadas[sup] = Array.from(cidSet).sort();
+    }
 
     const estadosFormatados = {};
     for (const [r, estSet] of Object.entries(estadosPorRegiao)) {
@@ -57,11 +73,16 @@ export async function getFiltros(req, res) {
       pesos: metaDoc.pesos || {},
       peso_categoria: metaDoc.peso_categoria || {},
       versao: metaDoc.versao || '1.0',
+      supervisores: Array.from(supervisoresSet).sort(),
+      cidades: Array.from(cidadesSet).sort(),
+      cidades_por_supervisor: cidadesFormatadas,
       regioes: Array.from(regioesSet).sort(),
       estados_por_regiao: estadosFormatados,
       filiais: filiaisDocs.map((f) => ({
         filial: f.Filial,
         nome: f.Nome_Filial,
+        supervisor: f.Supervisor,
+        cidade: f.Cidade,
         regiao: f.Regiao,
         estado: f.Estado,
       })),

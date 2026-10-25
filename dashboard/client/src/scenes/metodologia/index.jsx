@@ -50,33 +50,33 @@ export default function Metodologia() {
             Metodologia & Regras de Negócio
           </Typography>
           <Typography variant="body1" color="text.secondary">
-            Documentação técnica dos 4 indicadores de perdas, parâmetros de calibração, pesos e governança dos dados.
+            Documentação técnica dos indicadores de perdas, parâmetros de calibração, pesos e governança dos dados.
           </Typography>
         </Box>
       </Box>
 
       {/* 4 Indicadores */}
       <Grid container spacing={2}>
-        <Grid item xs={12} md={6}>
+        <Grid item xs={12} md={4}>
           <Card sx={{ height: '100%' }}>
             <CardContent sx={{ p: 2.5 }}>
               <Typography variant="h4" fontWeight={700} color="#10B981" gutterBottom>
-                1. Monitor de Ruptura
+                1. Monitor de Ruptura (Autonomia)
               </Typography>
               <Typography variant="body2" color="text.secondary" paragraph>
                 Mede a saúde de abastecimento com base no tempo de autonomia estimado.
               </Typography>
               <Typography variant="body2">
-                • <strong>Ruptura Consumada:</strong> Estoque = 0 e Demanda Atual &gt; 0.<br />
-                • <strong>Crítico / Alto Risco:</strong> Dias de Cobertura &lt; 3 dias.<br />
-                • <strong>Risco Moderado:</strong> 3 a 7 dias de cobertura.<br />
-                • <strong>Sem Risco:</strong> Cobertura &gt; 7 dias.
+                • <strong>Ruptura Consumada:</strong> Estoque = 0 e Demanda &gt; 0.<br />
+                • <strong>Crítico / Alto Risco:</strong> Autonomia &lt; 3 dias.<br />
+                • <strong>Risco Moderado:</strong> 3 a 10 dias de autonomia.<br />
+                • <strong>Sem Risco:</strong> Autonomia &gt; 10 dias.
               </Typography>
             </CardContent>
           </Card>
         </Grid>
 
-        <Grid item xs={12} md={6}>
+        <Grid item xs={12} md={4}>
           <Card sx={{ height: '100%' }}>
             <CardContent sx={{ p: 2.5 }}>
               <Typography variant="h4" fontWeight={700} color="#F59E0B" gutterBottom>
@@ -86,45 +86,29 @@ export default function Metodologia() {
                 Identifica capital represado acima da demanda com risco de desvalorização e perda.
               </Typography>
               <Typography variant="body2">
-                • <strong>Estoque Normal:</strong> Dias de Cobertura &le; 45 dias.<br />
-                • <strong>Excesso Elevado:</strong> 45 a 90 dias de cobertura.<br />
+                • <strong>Estoque Normal:</strong> Dias de Cobertura &le; 60 dias.<br />
+                • <strong>Excesso Elevado:</strong> 60 a 90 dias de cobertura.<br />
                 • <strong>Excesso Crítico:</strong> &gt; 90 dias de cobertura.<br />
-                • <strong>Filiais Críticas:</strong> Lojas com mais de 15% das unidades em excesso.
+                • <strong>Filiais Críticas:</strong> Lojas com índice de excesso &gt; 5,0%.
               </Typography>
             </CardContent>
           </Card>
         </Grid>
 
-        <Grid item xs={12} md={6}>
-          <Card sx={{ height: '100%' }}>
-            <CardContent sx={{ p: 2.5 }}>
-              <Typography variant="h4" fontWeight={700} color="#8B5CF6" gutterBottom>
-                3. Risco Preditivo (ML - Random Forest)
-              </Typography>
-              <Typography variant="body2" color="text.secondary" paragraph>
-                Classificador probabilístico baseado em 10 features operacionais (perdas históricas, vendas AV e divergências).
-              </Typography>
-              <Alert severity="warning" variant="outlined" sx={{ py: 0.5, fontSize: '0.8rem' }}>
-                Rotulado como <strong>indicador experimental</strong> em virtude de dependência parcial com o alvo nos dados históricos.
-              </Alert>
-            </CardContent>
-          </Card>
-        </Grid>
-
-        <Grid item xs={12} md={6}>
+        <Grid item xs={12} md={4}>
           <Card sx={{ height: '100%' }}>
             <CardContent sx={{ p: 2.5 }}>
               <Typography variant="h4" fontWeight={700} color="#22D3EE" gutterBottom>
-                4. Score de Auditoria (Multi-Fator)
+                3. Score de Auditoria (Multi-Fator)
               </Typography>
               <Typography variant="body2" color="text.secondary" paragraph>
                 Métrica auditável e explicável que orienta o remanejamento proativo com plano de ação por grupo farmacológico.
               </Typography>
               <Typography variant="body2">
-                • <strong>Alto Risco:</strong> Score &gt; 0,30 (prioridade imediata)<br />
-                • <strong>Médio-Alto Risco:</strong> Score de 0,20 a 0,30<br />
-                • <strong>Médio Risco:</strong> Score de 0,10 a 0,20<br />
-                • <strong>Baixo Risco:</strong> Score &le; 0,10
+                • <strong>Alto Risco:</strong> Score &gt; 0,70 (prioridade imediata)<br />
+                • <strong>Médio-Alto Risco:</strong> Score de 0,50 a 0,70<br />
+                • <strong>Médio Risco:</strong> Score de 0,30 a 0,50<br />
+                • <strong>Baixo Risco:</strong> Score &le; 0,30
               </Typography>
             </CardContent>
           </Card>
@@ -141,7 +125,7 @@ export default function Metodologia() {
             </Typography>
           </Box>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-            Pesos estatísticos calibrados sobre a base de 606.457 produtos e 232 filiais.
+            Pesos estatísticos calibrados de acordo com regras de negócio bem definidas.
           </Typography>
 
           <TableContainer component={Paper} sx={{ borderRadius: 2, border: '1px solid', borderColor: 'divider' }}>

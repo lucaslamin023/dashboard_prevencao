@@ -61,8 +61,8 @@ export default function Overview() {
   const columns = [
     { field: 'filial', headerName: 'Filial', width: 90 },
     { field: 'nome_filial', headerName: 'Nome da Unidade', flex: 1.2, minWidth: 180 },
-    { field: 'regiao', headerName: 'Região', width: 130 },
-    { field: 'estado', headerName: 'UF', width: 70 },
+    { field: 'supervisor', headerName: 'Supervisor', width: 200 },
+    { field: 'cidade', headerName: 'Cidade', width: 130 },
     {
       field: 'faturamento',
       headerName: 'Faturamento',
@@ -112,19 +112,26 @@ export default function Overview() {
     },
   ];
 
-  // Dados do Donut Mix AV
+  // Dados do Donut Composição das Perdas Operacionais
+  const totalPerdas = (mixAv?.quebra || 0) + (mixAv?.vencimento || 0) + (mixAv?.inventario || 0);
   const pieData = [
     {
-      id: 'Vendas Normais',
-      label: 'Normais',
-      value: mixAv?.normal || 0,
-      color: '#10B981',
+      id: 'Divergência de Inventário',
+      label: 'Divergência de Inventário',
+      value: mixAv?.inventario || 0,
+      color: '#F43F5E',
     },
     {
-      id: 'A Vencer (AV)',
-      label: 'A Vencer',
-      value: mixAv?.av || 0,
+      id: 'Quebras & Avarias',
+      label: 'Quebras & Avarias',
+      value: mixAv?.quebra || 0,
       color: '#F59E0B',
+    },
+    {
+      id: 'Perda por Vencimento',
+      label: 'Vencimento',
+      value: mixAv?.vencimento || 0,
+      color: '#8B5CF6',
     },
   ];
 
@@ -179,7 +186,7 @@ export default function Overview() {
           <KpiCard
             title="Índice de Excesso"
             value={formatPercent(kpis?.perc_indice_excesso)}
-            subtitle="Unidades > 45 dias cob."
+            subtitle="Unidades > 60 dias cob."
             icon={InventoryIcon}
             color="#EAB308"
             loading={loadingKpis}
@@ -282,8 +289,8 @@ export default function Overview() {
         {/* Gráfico 2: Donut Mix AV */}
         <Grid item xs={12} lg={4}>
           <ChartCard
-            title="Mix de Vendas: Normal × AV"
-            subtitle="Composição de faturamento entre produtos de lote normal vs lotes próximos ao vencimento"
+            title="Composição das Perdas Operacionais"
+            subtitle="Distribuição percentual entre quebras/avarias, vencimento e divergência de inventário"
             loading={loadingMix}
             height={360}
           >
@@ -300,18 +307,17 @@ export default function Overview() {
               enableArcLinkLabels={false}
               arcLabelsSkipAngle={10}
               arcLabelsTextColor="#FFFFFF"
-              arcLabel={(d) => `${formatPercent((d.value / (mixAv?.total || 1)) * 100)}`}
-              theme={{
-                tooltip: {
-                  container: {
-                    background: '#1E293B',
-                    color: '#F8FAFC',
-                    fontSize: 12,
-                    borderRadius: 6,
-                    border: '1px solid #334155',
-                  },
-                },
-              }}
+              arcLabel={(d) => (totalPerdas > 0 ? `${formatPercent((d.value / totalPerdas) * 100)}` : '0%')}
+              tooltip={({ datum: { data } }) => (
+                <Box sx={{ background: '#1E293B', p: 1.5, borderRadius: 1.5, border: '1px solid #334155', color: '#F8FAFC' }}>
+                  <Typography variant="caption" sx={{ color: data.color, fontWeight: 700 }}>
+                    {data.id}
+                  </Typography>
+                  <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                    {formatCurrency(data.value)} ({totalPerdas > 0 ? formatPercent((data.value / totalPerdas) * 100) : '0%'})
+                  </Typography>
+                </Box>
+              )}
             />
           </ChartCard>
         </Grid>

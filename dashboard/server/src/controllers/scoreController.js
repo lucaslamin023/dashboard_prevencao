@@ -185,36 +185,36 @@ export async function getHeatmap(req, res) {
       { $match: matchCubo },
       {
         $group: {
-          _id: { categoria: '$Categoria', regiao: '$Regiao' },
+          _id: { categoria: '$Categoria', supervisor: '$Supervisor' },
           sum_score: { $sum: '$sum_score_aud' },
           n_score: { $sum: '$n_score' },
         },
       },
     ]).toArray();
 
-    const regioesSet = new Set();
+    const supervisoresSet = new Set();
     const catMap = new Map();
 
     agg.forEach((item) => {
       const cat = item._id.categoria || 'OUTROS';
-      const regiao = item._id.regiao || 'OUTROS';
-      if (regiao) regioesSet.add(regiao);
+      const supervisor = item._id.supervisor || 'OUTROS';
+      if (supervisor) supervisoresSet.add(supervisor);
       const score = item.n_score > 0 ? Math.round((item.sum_score / item.n_score) * 1000) / 1000 : 0;
 
       if (!catMap.has(cat)) {
         catMap.set(cat, {});
       }
-      catMap.get(cat)[regiao] = score;
+      catMap.get(cat)[supervisor] = score;
     });
 
-    const regioes = Array.from(regioesSet).sort();
+    const supervisores = Array.from(supervisoresSet).sort();
 
-    // Formato Nivo Heatmap: [{ id: 'MEDICAMENTOS', data: [{ x: 'SUDESTE', y: 0.18 }, ...] }]
-    const result = Array.from(catMap.entries()).map(([categoria, regiaoScores]) => ({
+    // Formato Nivo Heatmap: [{ id: 'MEDICAMENTOS', data: [{ x: 'Marcelo Barbosa - Nordeste', y: 0.18 }, ...] }]
+    const result = Array.from(catMap.entries()).map(([categoria, supScores]) => ({
       id: categoria,
-      data: regioes.map((r) => ({
-        x: r,
-        y: regiaoScores[r] !== undefined ? regiaoScores[r] : 0,
+      data: supervisores.map((s) => ({
+        x: s.includes(' - ') ? s.split(' - ')[0] : s,
+        y: supScores[s] !== undefined ? supScores[s] : 0,
       })),
     }));
 
@@ -408,89 +408,76 @@ export async function getProdutoDetalhe(req, res) {
     }
 
     // Mapeamento dos 10 fatores de contribuição do Score de Auditoria
-    const metaDoc = await db.collection('meta').findOne({}) || {};
-    const pesos = metaDoc.pesos || {
-      prazo_validade: 0.22,
-      dias_sem_venda: 0.16,
-      dias_sem_entrada: 0.08,
-      cobertura: 0.14,
-      tendencia_perda: 0.10,
-      perda_historica: 0.10,
-      divergencia: 0.08,
-      demanda_rede: 0.06,
-      concentracao_venda: 0.06,
-    };
-
     const fatores = [
       {
-        chave: 'Contrib_Prazo_Validade',
-        nome: 'Prazo de Validade',
-        peso: pesos.prazo_validade,
-        valor_bruto: produto.Prazo_Validade_Meses !== undefined ? `${produto.Prazo_Validade_Meses} meses` : 'N/A',
-        contrib: produto.Contrib_Prazo_Validade || 0,
-      },
-      {
-        chave: 'Contrib_Dias_Sem_Venda',
-        nome: 'Dias Sem Venda',
-        peso: pesos.dias_sem_venda,
+        chave: 'Contrib_meses_desde_ultima_venda',
+        nome: 'Meses Sem Venda (Recência)',
+        peso: 0.22,
         valor_bruto: produto.Ultima_Venda ? `${produto.Ultima_Venda}` : 'Nunca vendeu',
-        contrib: produto.Contrib_Dias_Sem_Venda || 0,
+        contrib: produto.Contrib_meses_desde_ultima_venda || 0,
       },
       {
-        chave: 'Contrib_Cobertura',
-        nome: 'Dias de Cobertura',
-        peso: pesos.cobertura,
-        valor_bruto: produto.Dias_Cobertura !== undefined ? `${produto.Dias_Cobertura} dias` : '0',
-        contrib: produto.Contrib_Cobertura || 0,
+        chave: 'Contrib_estoque_sobre_demanda_log',
+        nome: 'Dias de Cobertura (Giro)',
+        peso: 0.15,
+        valor_bruto: produto.Dias_Cobertura !== undefined && produto.Dias_Cobertura !== null ? `${produto.Dias_Cobertura} dias` : '0 dias',
+        contrib: produto.Contrib_estoque_sobre_demanda_log || 0,
       },
       {
-        chave: 'Contrib_Perda_Historica',
-        nome: 'Perda Histórica (Ano)',
-        peso: pesos.perda_historica,
-        valor_bruto: produto.Qtd_Perdida_Ano !== undefined ? `${produto.Qtd_Perdida_Ano} un` : '0',
-        contrib: produto.Contrib_Perda_Historica || 0,
+        chave: 'Contrib_proporcao_a_vencer',
+        nome: 'Prazo de Validade / A Vencer',
+        peso: 0.13,
+        valor_bruto: produto.Qtd_A_Vencer ? `${produto.Qtd_A_Vencer} un a vencer` : (produto.Prazo_Validade_Meses ? `${produto.Prazo_Validade_Meses} meses` : '0 un a vencer'),
+        contrib: produto.Contrib_proporcao_a_vencer || 0,
       },
       {
-        chave: 'Contrib_Tendencia_Perda',
-        nome: 'Tendência de Perda',
-        peso: pesos.tendencia_perda,
-        valor_bruto: produto.Tendencia_Perda !== undefined ? `${produto.Tendencia_Perda}` : '0',
-        contrib: produto.Contrib_Tendencia_Perda || 0,
+        chave: 'Contrib_proporcao_perda',
+        nome: 'Histórico de Perdas',
+        peso: 0.13,
+        valor_bruto: produto.Qtd_Perdida_Ano !== undefined && produto.Qtd_Perdida_Ano !== null ? `${produto.Qtd_Perdida_Ano} un perdidas` : '0 un',
+        contrib: produto.Contrib_proporcao_perda || 0,
       },
       {
-        chave: 'Contrib_Dias_Sem_Entrada',
-        nome: 'Dias Sem Entrada',
-        peso: pesos.dias_sem_entrada,
-        valor_bruto: produto.Ultima_Entrada ? `${produto.Ultima_Entrada}` : 'N/A',
-        contrib: produto.Contrib_Dias_Sem_Entrada || 0,
+        chave: 'Contrib_custo_total_estoque',
+        nome: 'Custo Total em Estoque',
+        peso: 0.13,
+        valor_bruto: produto.Valor_Estoque_Custo !== undefined && produto.Valor_Estoque_Custo !== null ? `R$ ${produto.Valor_Estoque_Custo.toFixed(2)}` : 'R$ 0,00',
+        contrib: produto.Contrib_custo_total_estoque || 0,
       },
       {
-        chave: 'Contrib_Divergencia',
-        nome: 'Divergência de Inventário',
-        peso: pesos.divergencia,
-        valor_bruto: produto.Qtd_Divergencias !== undefined ? `${produto.Qtd_Divergencias} divergências` : '0',
-        contrib: produto.Contrib_Divergencia || 0,
+        chave: 'Contrib_TENDENCIA_NUM',
+        nome: 'Tendência de Perda (Slope)',
+        peso: 0.08,
+        valor_bruto: produto.Tendencia_Perda !== undefined && produto.Tendencia_Perda !== null ? String(produto.Tendencia_Perda) : '0',
+        contrib: produto.Contrib_TENDENCIA_NUM || 0,
       },
       {
-        chave: 'Contrib_Demanda_Rede',
+        chave: 'Contrib_venda_max_log',
+        nome: 'Concentração na Maior Loja',
+        peso: 0.065,
+        valor_bruto: produto.Filial_Maior_Venda ? `Loja #${produto.Filial_Maior_Venda} (${produto.Qtd_Vendida_Maior_Filial || 0} un)` : 'N/A',
+        contrib: produto.Contrib_venda_max_log || 0,
+      },
+      {
+        chave: 'Contrib_demanda_rede_log',
         nome: 'Demanda na Rede',
-        peso: pesos.demanda_rede,
-        valor_bruto: produto.Demanda_Rede !== undefined ? `${produto.Demanda_Rede} un` : '0',
-        contrib: produto.Contrib_Demanda_Rede || 0,
+        peso: 0.065,
+        valor_bruto: produto.Demanda_Rede !== undefined && produto.Demanda_Rede !== null ? `${produto.Demanda_Rede} un` : '0 un',
+        contrib: produto.Contrib_demanda_rede_log || 0,
       },
       {
-        chave: 'Contrib_Concentracao_Venda',
-        nome: 'Concentração de Venda na Maior Filial',
-        peso: pesos.concentracao_venda,
-        valor_bruto: produto.Filial_Maior_Venda ? `Filial ${produto.Filial_Maior_Venda} (${produto.Qtd_Vendida_Maior_Filial || 0} un)` : 'N/A',
-        contrib: produto.Contrib_Concentracao_Venda || 0,
+        chave: 'Contrib_dias_desde_ultima_entrada',
+        nome: 'Tempo Desde Última Entrada',
+        peso: 0.03,
+        valor_bruto: produto.Ultima_Entrada ? String(produto.Ultima_Entrada) : 'N/A',
+        contrib: produto.Contrib_dias_desde_ultima_entrada || 0,
       },
       {
-        chave: 'Contrib_Bonus_Categoria',
-        nome: 'Bônus de Categoria (Risco Inerente)',
+        chave: 'Contrib_Categoria',
+        nome: 'Bônus de Risco da Categoria',
         peso: 0.10,
         valor_bruto: produto.Categoria || 'N/A',
-        contrib: produto.Contrib_Bonus_Categoria || 0,
+        contrib: produto.Contrib_Categoria || 0,
       },
     ];
 

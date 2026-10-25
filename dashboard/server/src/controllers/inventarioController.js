@@ -1,6 +1,6 @@
 import { getDB } from '../config/db.js';
 import cache from '../utils/cache.js';
-import { buildMatchCubo, buildMatchCuboMensal, parsePagination } from '../services/filtros.js';
+import { buildMatchCubo, buildMatchCuboMensal, buildMatchInventarios, parsePagination } from '../services/filtros.js';
 
 export async function getInventarioKpis(req, res) {
   const cacheKey = cache.generateKey('inventario:kpis', req.query);
@@ -11,30 +11,49 @@ export async function getInventarioKpis(req, res) {
     const db = getDB();
     if (!db) return res.status(503).json({ erro: 'Banco de dados não conectado' });
 
-    const match = buildMatchCuboMensal(req.query);
+    const match = buildMatchInventarios(req.query);
 
-    const agg = await db.collection('inventarios').aggregate([
-      { $match: match },
-      {
-        $group: {
-          _id: null,
-          total_inventarios: { $sum: 1 },
-          acuracidade_media: { $avg: '$Acuracidade_Perc' },
-          valor_sobra: { $sum: '$Valor_Sobra' },
-          valor_falta: { $sum: '$Valor_Falta' },
-          diferenca_liquida: { $sum: '$Diferenca_Liquida' },
-          dentro_meta: {
-            $sum: { $cond: [{ $eq: ['$Status_Acuracidade', 'Dentro da Meta'] }, 1, 0] },
-          },
-          atencao: {
-            $sum: { $cond: [{ $eq: ['$Status_Acuracidade', 'Atenção'] }, 1, 0] },
-          },
-          urgente: {
-            $sum: { $cond: [{ $eq: ['$Status_Acuracidade', 'Urgente'] }, 1, 0] },
+    const [agg, ultimos, historico] = await Promise.all([
+      db.collection('inventarios').aggregate([
+        { $match: match },
+        {
+          $group: {
+            _id: null,
+            total_inventarios: { $sum: 1 },
+            acuracidade_media: { $avg: '$Acuracidade_Perc' },
+            valor_sobra: { $sum: '$Valor_Sobra' },
+            valor_falta: { $sum: '$Valor_Falta' },
+            diferenca_liquida: { $sum: '$Diferenca_Liquida' },
+            dentro_meta: {
+              $sum: { $cond: [{ $eq: ['$Status_Acuracidade', 'Dentro da Meta'] }, 1, 0] },
+            },
+            atencao: {
+              $sum: { $cond: [{ $eq: ['$Status_Acuracidade', 'Atenção'] }, 1, 0] },
+            },
+            urgente: {
+              $sum: { $cond: [{ $eq: ['$Status_Acuracidade', 'Urgente'] }, 1, 0] },
+            },
           },
         },
-      },
-    ]).toArray();
+      ]).toArray(),
+
+      db.collection('inventarios').aggregate([
+        { $match: match },
+        { $sort: { Data: -1 } },
+        {
+          $group: {
+            _id: '$Filial',
+            status: { $first: '$Status_Acuracidade' },
+            acuracidade: { $first: '$Acuracidade_Perc' },
+          },
+        },
+      ]).toArray(),
+
+      db.collection('inventarios').find(
+        match,
+        { projection: { Filial: 1, Data: 1, Acuracidade_Perc: 1, Status_Acuracidade: 1 }, sort: { Filial: 1, Data: 1 } }
+      ).toArray(),
+    ]);
 
     const row = agg[0] || {};
     const total = row.total_inventarios || 0;
@@ -45,6 +64,37 @@ export async function getInventarioKpis(req, res) {
     const dentro = row.dentro_meta || 0;
     const atencao = row.atencao || 0;
     const urgente = row.urgente || 0;
+
+    // Cálculo do Estado Urgente baseado na matriz do último inventário
+    const totalFiliaisUltimo = ultimos.length;
+    const filiaisUrgentesUltimo = ultimos.filter((u) => u.status === 'Urgente').length;
+    const percUrgenteUltimo = totalFiliaisUltimo > 0 ? Math.round((filiaisUrgentesUltimo / totalFiliaisUltimo) * 10000) / 100 : 0;
+
+    // Cálculo da Taxa de Reincidência (não atingiu a meta de 99.5% 2 vezes seguidas)
+    const filialHistMap = new Map();
+    historico.forEach((inv) => {
+      if (!filialHistMap.has(inv.Filial)) filialHistMap.set(inv.Filial, []);
+      filialHistMap.get(inv.Filial).push(inv);
+    });
+
+    let filiaisReincidentes = 0;
+    filialHistMap.forEach((hist) => {
+      let consecutivosFora = 0;
+      for (const inv of hist) {
+        const ac = inv.Acuracidade_Perc ?? 100;
+        if (ac < 99.5) {
+          consecutivosFora += 1;
+          if (consecutivosFora >= 2) {
+            filiaisReincidentes += 1;
+            break;
+          }
+        } else {
+          consecutivosFora = 0;
+        }
+      }
+    });
+
+    const taxaReincidencia = filialHistMap.size > 0 ? Math.round((filiaisReincidentes / filialHistMap.size) * 10000) / 100 : 0;
 
     const result = {
       total_inventarios: total,
@@ -59,6 +109,11 @@ export async function getInventarioKpis(req, res) {
       lojas_urgente: urgente,
       perc_dentro_meta: total > 0 ? Math.round((dentro / total) * 10000) / 100 : 0,
       perc_urgente: total > 0 ? Math.round((urgente / total) * 10000) / 100 : 0,
+      filiais_urgentes_ultimo: filiaisUrgentesUltimo,
+      total_filiais_ultimo: totalFiliaisUltimo,
+      perc_urgente_ultimo: percUrgenteUltimo,
+      filiais_reincidentes: filiaisReincidentes,
+      taxa_reincidencia: taxaReincidencia,
     };
 
     cache.set(cacheKey, result, 300);
@@ -78,7 +133,7 @@ export async function getEvolucaoAcuracidade(req, res) {
     const db = getDB();
     if (!db) return res.status(503).json({ erro: 'Banco de dados não conectado' });
 
-    const match = buildMatchCuboMensal(req.query);
+    const match = buildMatchInventarios(req.query);
 
     const agg = await db.collection('inventarios').aggregate([
       { $match: match },
@@ -117,7 +172,7 @@ export async function getUltimoInventarioFiliais(req, res) {
     const db = getDB();
     if (!db) return res.status(503).json({ erro: 'Banco de dados não conectado' });
 
-    const match = buildMatchCubo(req.query);
+    const match = buildMatchInventarios(req.query);
 
     if (req.query.status_acuracidade) {
       match.Status_Acuracidade = req.query.status_acuracidade;

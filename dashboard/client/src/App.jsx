@@ -10,7 +10,6 @@ import Layout from './components/Layout.jsx';
 const Overview = lazy(() => import('./scenes/overview/index.jsx'));
 const VendasAv = lazy(() => import('./scenes/vendasAv/index.jsx'));
 const Inventario = lazy(() => import('./scenes/inventario/index.jsx'));
-const RiscoMl = lazy(() => import('./scenes/riscoMl/index.jsx'));
 const Excesso = lazy(() => import('./scenes/excesso/index.jsx'));
 const Ruptura = lazy(() => import('./scenes/ruptura/index.jsx'));
 const ScoreAuditoria = lazy(() => import('./scenes/score/index.jsx'));
@@ -38,7 +37,6 @@ export default function App() {
               <Route path="/" element={<Overview />} />
               <Route path="/vendas-av" element={<VendasAv />} />
               <Route path="/inventario" element={<Inventario />} />
-              <Route path="/risco-ml" element={<RiscoMl />} />
               <Route path="/excesso" element={<Excesso />} />
               <Route path="/ruptura" element={<Ruptura />} />
               <Route path="/score" element={<ScoreAuditoria />} />

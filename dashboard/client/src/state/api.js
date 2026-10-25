@@ -40,7 +40,7 @@ const buildQueryString = (params = {}) => {
 export const api = createApi({
   reducerPath: 'adminApi',
   baseQuery: baseQueryWithRetry,
-  tagTypes: ['Meta', 'Overview', 'ML', 'Excesso', 'Ruptura', 'Score', 'VendasAv', 'Inventario'],
+  tagTypes: ['Meta', 'Overview', 'Excesso', 'Ruptura', 'Score', 'VendasAv', 'Inventario'],
   endpoints: (build) => ({
     // Meta
     getHealth: build.query({
@@ -67,24 +67,6 @@ export const api = createApi({
     getOverviewFiliais: build.query({
       query: (params) => `/overview/filiais${buildQueryString(params)}`,
       providesTags: ['Overview'],
-    }),
-
-    // Risco Preditivo ML
-    getMlKpis: build.query({
-      query: (params) => `/risco-ml/kpis${buildQueryString(params)}`,
-      providesTags: ['ML'],
-    }),
-    getMlTopProdutos: build.query({
-      query: (params) => `/risco-ml/top-produtos${buildQueryString(params)}`,
-      providesTags: ['ML'],
-    }),
-    getMlScatter: build.query({
-      query: (params) => `/risco-ml/scatter${buildQueryString(params)}`,
-      providesTags: ['ML'],
-    }),
-    getMlTabela: build.query({
-      query: (params) => `/risco-ml/tabela${buildQueryString(params)}`,
-      providesTags: ['ML'],
     }),
 
     // Excesso de Estoque
@@ -198,10 +180,6 @@ export const {
   useGetOverviewSerieMensalQuery,
   useGetOverviewMixAvQuery,
   useGetOverviewFiliaisQuery,
-  useGetMlKpisQuery,
-  useGetMlTopProdutosQuery,
-  useGetMlScatterQuery,
-  useGetMlTabelaQuery,
   useGetExcessoKpisQuery,
   useGetExcessoTreemapQuery,
   useGetExcessoPorCategoriaQuery,

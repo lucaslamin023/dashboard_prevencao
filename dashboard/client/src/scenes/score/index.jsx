@@ -319,20 +319,20 @@ export default function ScoreAuditoria() {
       <Grid container spacing={2}>
         <Grid item xs={12}>
           <ChartCard
-            title="Mapa de Calor: Score Médio (Categoria × Região)"
-            subtitle="Identificação de zonas geográficas com maior fragilidade de validade por linha de produto"
+            title="Mapa de Calor: Score Médio (Categoria × Supervisor)"
+            subtitle="Identificação de concentração de risco de auditoria por supervisor regional e linha de produto"
             loading={loadingHeatmap}
-            height={320}
+            height={340}
           >
             {heatmapData?.length > 0 ? (
               <ResponsiveHeatMap
                 data={heatmapData}
-                margin={{ top: 30, right: 30, bottom: 50, left: 140 }}
+                margin={{ top: 40, right: 30, bottom: 50, left: 140 }}
                 valueFormat=">-.3f"
                 axisTop={{
                   tickSize: 5,
                   tickPadding: 5,
-                  tickRotation: 0,
+                  tickRotation: -15,
                   legend: '',
                 }}
                 axisLeft={{

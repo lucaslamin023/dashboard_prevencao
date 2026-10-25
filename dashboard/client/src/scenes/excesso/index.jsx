@@ -65,7 +65,7 @@ export default function Excesso() {
             filial: f.filial,
             nome: f.name,
             nome_curto: f.name.length > 20 ? `${f.name.substring(0, 18)}...` : f.name,
-            estado: c.name,
+            supervisor: c.name,
             valor_excesso: f.valor_excesso || 0,
             estoque_un: f.estoque_un || 0,
             excesso_un: f.excesso_un || 0,
@@ -79,14 +79,12 @@ export default function Excesso() {
 
   const columns = [
     { field: 'filial', headerName: 'Filial', width: 90 },
-    { field: 'nome_filial', headerName: 'Unidade', flex: 1.2, minWidth: 170 },
-    { field: 'supervisor', headerName: 'Supervisor', flex: 1, minWidth: 150 },
-    { field: 'regiao', headerName: 'Região', width: 130 },
-    { field: 'estado', headerName: 'UF', width: 70 },
+    { field: 'nome_filial', headerName: 'Unidade', flex: 1.3, minWidth: 180 },
+    { field: 'supervisor', headerName: 'Supervisor', flex: 1.3, minWidth: 200 },
     {
       field: 'estoque_un',
       headerName: 'Estoque Total (UN)',
-      width: 140,
+      width: 150,
       valueFormatter: (value) => {
         const val = typeof value === 'object' && value !== null ? value.value : value;
         return val !== undefined && val !== null ? formatNumber(val) : '—';
@@ -118,7 +116,7 @@ export default function Excesso() {
       width: 110,
       renderCell: (params) => {
         const val = params.value || 0;
-        const color = val > 15 ? '#EF4444' : val > 8 ? '#F59E0B' : '#10B981';
+        const color = val > 5.0 ? '#EF4444' : val >= 4.5 ? '#F59E0B' : '#10B981';
         return <span style={{ color, fontWeight: 700 }}>{formatPercent(val)}</span>;
       },
     },
@@ -132,7 +130,7 @@ export default function Excesso() {
           Excesso de Estoque & Capital Imobilizado
         </Typography>
         <Typography variant="body1" color="text.secondary">
-          Identificação de filiais e categorias com estoque acima da demanda projetada (&gt; 45 dias de cobertura) e risco de desvalorização.
+          Identificação de filiais e categorias com estoque acima da demanda projetada (&gt; 60 dias de cobertura) e risco de desvalorização.
         </Typography>
       </Box>
 
@@ -152,7 +150,8 @@ export default function Excesso() {
           <KpiCard
             title="Volume em Excesso"
             value={formatNumber(kpis?.excesso_total_un)}
-            subtitle="Unidades > 45 dias de cobertura"
+            badge={formatPercent(kpis?.perc_indice_excesso)}
+            subtitle="Volume > 60 dias de cobertura"
             icon={WarningAmberIcon}
             color="#F59E0B"
             loading={loadingKpis}
@@ -172,10 +171,10 @@ export default function Excesso() {
           <KpiCard
             title="Filiais em Excesso Crítico"
             value={formatNumber(kpis?.qtd_filiais_criticas)}
-            badge={formatPercent(kpis?.perc_indice_excesso)}
-            subtitle="Índice de excesso > 15%"
+            badge={formatPercent(kpis?.perc_filiais_criticas)}
+            subtitle="Índice de excesso > 5,0%"
             icon={StorefrontIcon}
-            color="#E11D48"
+            color={(kpis?.qtd_filiais_criticas || 0) > 0 ? '#E11D48' : '#10B981'}
             loading={loadingKpis}
           />
         </Grid>
@@ -217,7 +216,12 @@ export default function Excesso() {
                     formatter={(val) => [formatCurrency(val), 'Capital Imobilizado']}
                     labelFormatter={(_, arr) => {
                       const item = arr[0]?.payload;
-                      return item ? `${item.nome} (#${item.filial}) - UF: ${item.estado}` : '';
+                      if (!item) return '';
+                      const filialLabel = item.nome?.includes(`#${item.filial}`)
+                        ? item.nome
+                        : `${item.nome} (#${item.filial})`;
+                      const sup = item.supervisor || '—';
+                      return `${filialLabel} - Supervisor: ${sup}`;
                     }}
                     contentStyle={{
                       backgroundColor: '#1E293B',
@@ -270,7 +274,7 @@ export default function Excesso() {
                     name === 'normal'
                       ? 'Normal'
                       : name === 'elevado'
-                      ? 'Excesso Elevado (45-90d)'
+                      ? 'Excesso Elevado (60-90d)'
                       : 'Excesso Crítico (>90d)',
                   ]}
                   contentStyle={{
@@ -286,7 +290,7 @@ export default function Excesso() {
                     val === 'normal'
                       ? 'Normal'
                       : val === 'elevado'
-                      ? 'Elevado (45-90d)'
+                      ? 'Elevado (60-90d)'
                       : 'Crítico (>90d)'
                   }
                 />

@@ -189,7 +189,7 @@ export default function ScoreDetailDrawer({ open, onClose, selectedProduct }) {
 
                   <LinearProgress
                     variant="determinate"
-                    value={Math.min(100, (fator.contrib / (fator.peso || 0.22)) * 100)}
+                    value={Math.min(100, Math.max(0, ((fator.contrib || 0) / (fator.peso || 0.01)) * 100))}
                     sx={{
                       height: 6,
                       borderRadius: 3,
@@ -199,9 +199,14 @@ export default function ScoreDetailDrawer({ open, onClose, selectedProduct }) {
                       },
                     }}
                   />
-                  <Typography variant="caption" color="text.secondary" sx={{ mt: 0.3, display: 'block' }}>
-                    Peso da regra: {formatPercent((fator.peso || 0) * 100, 0)}
-                  </Typography>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 0.4 }}>
+                    <Typography variant="caption" color="text.secondary">
+                      Peso da regra: <strong>{((fator.peso || 0) * 100).toLocaleString('pt-BR', { maximumFractionDigits: 1 })}%</strong>
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      Impacto no risco: <strong>{Math.round(Math.min(100, ((fator.contrib || 0) / (fator.peso || 0.01)) * 100))}%</strong>
+                    </Typography>
+                  </Box>
                 </Box>
               ))}
             </Box>

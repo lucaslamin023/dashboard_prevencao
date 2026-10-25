@@ -47,12 +47,14 @@ export async function getExcessoKpis(req, res) {
     const valorExcesso = Math.round((g.valor_excesso_custo || 0) * 100) / 100;
     const percIndice = estoqueTotal > 0 ? Math.round((excessoTotal / estoqueTotal) * 10000) / 100 : 0;
 
+    const totalFiliais = aggFiliais.length;
     let qtdFiliaisCriticas = 0;
     aggFiliais.forEach((f) => {
-      if (f.estoque_un > 0 && (f.excesso_un / f.estoque_un) > 0.15) {
+      if (f.estoque_un > 0 && (f.excesso_un / f.estoque_un) > 0.05) {
         qtdFiliaisCriticas++;
       }
     });
+    const percFiliaisCriticas = totalFiliais > 0 ? Math.round((qtdFiliaisCriticas / totalFiliais) * 10000) / 100 : 0;
 
     const result = {
       estoque_total_un: estoqueTotal,
@@ -61,6 +63,8 @@ export async function getExcessoKpis(req, res) {
       valor_excesso_custo: valorExcesso,
       perc_indice_excesso: percIndice,
       qtd_filiais_criticas: qtdFiliaisCriticas,
+      total_filiais: totalFiliais,
+      perc_filiais_criticas: percFiliaisCriticas,
     };
 
     cache.set(cacheKey, result, 300);
@@ -86,8 +90,9 @@ export async function getTreemap(req, res) {
       { $match: matchCubo },
       {
         $group: {
-          _id: { filial: '$Filial', estado: '$Estado' },
+          _id: { filial: '$Filial', supervisor: '$Supervisor' },
           nome_filial: { $first: '$Nome_Filial' },
+          cidade: { $first: '$Cidade' },
           estoque_un: { $sum: '$estoque_un' },
           excesso_un: { $sum: '$excesso_un' },
           valor_excesso_custo: { $sum: '$valor_excesso_custo' },
@@ -95,11 +100,11 @@ export async function getTreemap(req, res) {
       },
     ]).toArray();
 
-    // Monta hierarquia Estado -> Filial para Nivo Treemap
-    const estadoMap = new Map();
+    // Monta hierarquia Supervisor -> Filial para Nivo Treemap
+    const supervisorMap = new Map();
 
     filiaisAgg.forEach((f) => {
-      const estado = f._id.estado || 'Outros';
+      const supervisor = f._id.supervisor || 'Outros';
       const filialNum = f._id.filial;
       const nome = f.nome_filial || `Filial ${filialNum}`;
       const estoque = f.estoque_un || 0;
@@ -107,11 +112,11 @@ export async function getTreemap(req, res) {
       const valorExcesso = Math.round((f.valor_excesso_custo || 0) * 100) / 100;
       const percExcesso = estoque > 0 ? Math.round((excesso / estoque) * 10000) / 100 : 0;
 
-      if (!estadoMap.has(estado)) {
-        estadoMap.set(estado, []);
+      if (!supervisorMap.has(supervisor)) {
+        supervisorMap.set(supervisor, []);
       }
 
-      estadoMap.get(estado).push({
+      supervisorMap.get(supervisor).push({
         name: `${nome} (#${filialNum})`,
         filial: filialNum,
         loc: estoque, // Nivo treemap metric size
@@ -123,9 +128,9 @@ export async function getTreemap(req, res) {
     });
 
     const children = [];
-    for (const [estado, listaFiliais] of estadoMap.entries()) {
+    for (const [supervisor, listaFiliais] of supervisorMap.entries()) {
       children.push({
-        name: estado,
+        name: supervisor,
         children: listaFiliais,
       });
     }
@@ -141,7 +146,8 @@ export async function getTreemap(req, res) {
           filial: f._id.filial,
           nome,
           nome_curto: nome.length > 18 ? `${nome.substring(0, 16)}...` : nome,
-          estado: f._id.estado || '—',
+          cidade: f.cidade || '—',
+          supervisor: f._id.supervisor || '—',
           estoque_un: estoque,
           excesso_un: excesso,
           valor_excesso: valorExcesso,

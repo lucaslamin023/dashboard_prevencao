@@ -19,6 +19,7 @@ import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 import CompareArrowsIcon from '@mui/icons-material/CompareArrows';
 import SearchIcon from '@mui/icons-material/Search';
+import ReplayIcon from '@mui/icons-material/Replay';
 import { useSelector } from 'react-redux';
 import {
   ResponsiveContainer,
@@ -207,21 +208,21 @@ export default function Inventario() {
         </Grid>
         <Grid item xs={12} sm={6} md={2.4}>
           <KpiCard
-            title="Lojas em Atenção"
-            value={formatNumber(kpis?.lojas_atencao)}
-            badge="99,00% - 99,49%"
-            subtitle="Sob monitoramento operacional"
-            icon={WarningAmberIcon}
-            color="#F59E0B"
+            title="Taxa de Reincidência"
+            value={formatPercent(kpis?.taxa_reincidencia)}
+            badge="< 99,50% 2x seguidas"
+            subtitle={`${formatNumber(kpis?.filiais_reincidentes)} filiais reincidentes`}
+            icon={ReplayIcon}
+            color={(kpis?.taxa_reincidencia || 0) > 30 ? '#EF4444' : '#F59E0B'}
             loading={loadingKpis}
           />
         </Grid>
         <Grid item xs={12} sm={6} md={2.4}>
           <KpiCard
             title="Estado Urgente"
-            value={formatNumber(kpis?.lojas_urgente)}
-            badge="< 99,00%"
-            subtitle={`${formatPercent(kpis?.perc_urgente)} das unidades`}
+            value={`${formatNumber(kpis?.filiais_urgentes_ultimo)} filiais`}
+            badge="< 99,00% (Último)"
+            subtitle={`${formatPercent(kpis?.perc_urgente_ultimo)} do último inventário`}
             icon={ErrorOutlineIcon}
             color="#E11D48"
             loading={loadingKpis}

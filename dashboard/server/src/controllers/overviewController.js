@@ -39,6 +39,8 @@ export async function getOverviewKpis(req, res) {
             faturamento_av: { $sum: '$faturamento_av' },
             total_av: { $sum: '$total_av' },
             perda_vencimento: { $sum: '$perda_vencimento' },
+            perda_quebra: { $sum: '$perda_quebra' },
+            perda_inventario: { $sum: '$perda_inventario' },
             perdas: { $sum: '$perda_valor' },
           },
         },
@@ -60,9 +62,12 @@ export async function getOverviewKpis(req, res) {
     const m = aggMensal[0] || {};
 
     const faturamento = Math.round((m.faturamento || 0) * 100) / 100;
-    const perdas = Math.round((m.perdas || 0) * 100) / 100;
+    const perdaQuebra = Math.round((m.perda_quebra || 0) * 100) / 100;
+    const perdaVencimento = Math.round((m.perda_vencimento || 0) * 100) / 100;
+    const perdaInventario = Math.round((m.perda_inventario || 0) * 100) / 100;
+    const perdas = Math.round(((m.perdas || (perdaQuebra + perdaVencimento + perdaInventario))) * 100) / 100;
     const faturamentoAv = Math.round((m.faturamento_av || 0) * 100) / 100;
-    const totalAv = Math.round(((m.total_av || (faturamentoAv + (m.perda_vencimento || 0)))) * 100) / 100;
+    const totalAv = Math.round(((m.total_av || (faturamentoAv + perdaVencimento))) * 100) / 100;
     const percVendasAv = totalAv > 0 ? Math.round((faturamentoAv / totalAv) * 10000) / 100 : 0;
     const estoqueUn = c.estoque_un || 0;
     const excessoUn = c.excesso_un || 0;
@@ -72,6 +77,9 @@ export async function getOverviewKpis(req, res) {
     const result = {
       faturamento,
       perdas,
+      perda_quebra: perdaQuebra,
+      perda_vencimento: perdaVencimento,
+      perda_inventario: perdaInventario,
       faturamento_av: faturamentoAv,
       total_av: totalAv,
       perc_perda_faturamento: faturamento > 0 ? Math.round((perdas / faturamento) * 10000) / 100 : 0,
@@ -112,8 +120,10 @@ export async function getSerieMensal(req, res) {
           _id: '$Ano_Mes',
           faturamento: { $sum: '$faturamento' },
           perdas: { $sum: '$perda_valor' },
-          faturamento_av: { $sum: '$faturamento_av' },
+          perda_quebra: { $sum: '$perda_quebra' },
           perda_vencimento: { $sum: '$perda_vencimento' },
+          perda_inventario: { $sum: '$perda_inventario' },
+          faturamento_av: { $sum: '$faturamento_av' },
           qtd_vendida: { $sum: '$qtd_vendida' },
           perda_qtd: { $sum: '$perda_qtd' },
         },
@@ -125,8 +135,10 @@ export async function getSerieMensal(req, res) {
       ano_mes: d._id,
       faturamento: Math.round(d.faturamento * 100) / 100,
       perdas: Math.round(d.perdas * 100) / 100,
+      perda_quebra: Math.round((d.perda_quebra || 0) * 100) / 100,
+      perda_vencimento: Math.round((d.perda_vencimento || 0) * 100) / 100,
+      perda_inventario: Math.round((d.perda_inventario || 0) * 100) / 100,
       faturamento_av: Math.round(d.faturamento_av * 100) / 100,
-      perda_vencimento: Math.round(d.perda_vencimento * 100) / 100,
       qtd_vendida: d.qtd_vendida,
       perda_qtd: d.perda_qtd,
     }));
@@ -157,6 +169,10 @@ export async function getMixAv(req, res) {
           _id: null,
           total_fat: { $sum: '$faturamento' },
           fat_av: { $sum: '$faturamento_av' },
+          perda_quebra: { $sum: '$perda_quebra' },
+          perda_vencimento: { $sum: '$perda_vencimento' },
+          perda_inventario: { $sum: '$perda_inventario' },
+          perdas: { $sum: '$perda_valor' },
         },
       },
     ]).toArray();
@@ -164,13 +180,23 @@ export async function getMixAv(req, res) {
     const row = agg[0] || {};
     const total = Math.round((row.total_fat || 0) * 100) / 100;
     const av = Math.round((row.fat_av || 0) * 100) / 100;
-    const normal = Math.max(0, Math.round((total - av) * 100) / 100);
+    const quebra = Math.round((row.perda_quebra || 0) * 100) / 100;
+    const vencimento = Math.round((row.perda_vencimento || 0) * 100) / 100;
+    const inventario = Math.round((row.perda_inventario || 0) * 100) / 100;
+    const totalPerdas = Math.round((row.perdas || (quebra + vencimento + inventario)) * 100) / 100;
 
     const result = {
-      normal,
+      quebra,
+      vencimento,
+      inventario,
+      total_perdas: totalPerdas,
+      perc_quebra: totalPerdas > 0 ? Math.round((quebra / totalPerdas) * 10000) / 100 : 0,
+      perc_vencimento: totalPerdas > 0 ? Math.round((vencimento / totalPerdas) * 10000) / 100 : 0,
+      perc_inventario: totalPerdas > 0 ? Math.round((inventario / totalPerdas) * 10000) / 100 : 0,
+      normal: Math.max(0, Math.round((total - av) * 100) / 100),
       av,
       total,
-      perc_normal: total > 0 ? Math.round((normal / total) * 10000) / 100 : 0,
+      perc_normal: total > 0 ? Math.round(((total - av) / total) * 10000) / 100 : 0,
       perc_av: total > 0 ? Math.round((av / total) * 10000) / 100 : 0,
     };
 
@@ -178,7 +204,7 @@ export async function getMixAv(req, res) {
     res.json(result);
   } catch (error) {
     console.error('Erro em getMixAv:', error);
-    res.status(500).json({ erro: 'Erro ao buscar mix AV', detalhe: error.message });
+    res.status(500).json({ erro: 'Erro ao buscar mix de perdas', detalhe: error.message });
   }
 }
 
@@ -198,6 +224,8 @@ export async function getFiliais(req, res) {
           $group: {
             _id: '$Filial',
             nome_filial: { $first: '$Nome_Filial' },
+            supervisor: { $first: '$Supervisor' },
+            cidade: { $first: '$Cidade' },
             regiao: { $first: '$Regiao' },
             estado: { $first: '$Estado' },
             estoque_un: { $sum: '$estoque_un' },
@@ -242,6 +270,8 @@ export async function getFiliais(req, res) {
       return {
         filial: fc._id,
         nome_filial: fc.nome_filial || `Filial ${fc._id}`,
+        supervisor: fc.supervisor || 'N/A',
+        cidade: fc.cidade || 'N/A',
         regiao: fc.regiao,
         estado: fc.estado,
         faturamento,

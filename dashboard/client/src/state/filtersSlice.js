@@ -1,6 +1,8 @@
 import { createSlice } from '@reduxjs/toolkit';
 
 const initialFilters = {
+  supervisor: '',
+  cidade: '',
   regiao: '',
   estado: '',
   filial: '',
@@ -20,7 +22,15 @@ export const filtersSlice = createSlice({
     setFilter: (state, action) => {
       const { key, value } = action.payload;
       state[key] = value;
-      // Ao mudar de região, limpa o estado se não pertencer
+      // Ao mudar de supervisor, limpa a cidade e a filial
+      if (key === 'supervisor') {
+        state.cidade = '';
+        state.filial = '';
+      }
+      if (key === 'cidade') {
+        state.filial = '';
+      }
+      // Compatibilidade legada
       if (key === 'regiao') {
         state.estado = '';
         state.filial = '';

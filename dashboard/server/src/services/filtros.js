@@ -5,6 +5,8 @@
 
 export function parseGlobalFilters(query = {}) {
   const {
+    supervisor,
+    cidade,
     regiao,
     estado,
     filial,
@@ -15,6 +17,8 @@ export function parseGlobalFilters(query = {}) {
   } = query;
 
   return {
+    supervisor: supervisor && supervisor.trim() !== '' ? supervisor.trim() : null,
+    cidade: cidade && cidade.trim() !== '' ? cidade.trim() : null,
     regiao: regiao && regiao.trim() !== '' ? regiao.trim() : null,
     estado: estado && estado.trim() !== '' ? estado.trim() : null,
     filial: filial && !isNaN(Number(filial)) ? Number(filial) : null,
@@ -35,6 +39,8 @@ export function buildMatchCubo(query = {}) {
   if (f.filial !== null) {
     match.Filial = f.filial;
   } else {
+    if (f.cidade) match.Cidade = new RegExp(`^${f.cidade}$`, 'i');
+    if (f.supervisor) match.Supervisor = new RegExp(`^${f.supervisor}$`, 'i');
     if (f.estado) match.Estado = new RegExp(`^${f.estado}$`, 'i');
     if (f.regiao) match.Regiao = new RegExp(`^${f.regiao}$`, 'i');
   }
@@ -55,6 +61,8 @@ export function buildMatchCuboMensal(query = {}) {
   if (f.filial !== null) {
     match.Filial = f.filial;
   } else {
+    if (f.cidade) match.Cidade = new RegExp(`^${f.cidade}$`, 'i');
+    if (f.supervisor) match.Supervisor = new RegExp(`^${f.supervisor}$`, 'i');
     if (f.estado) match.Estado = new RegExp(`^${f.estado}$`, 'i');
     if (f.regiao) match.Regiao = new RegExp(`^${f.regiao}$`, 'i');
   }
@@ -63,6 +71,47 @@ export function buildMatchCuboMensal(query = {}) {
   if (f.categoria) match.Categoria = new RegExp(`^${f.categoria}$`, 'i');
 
   // dataIni e dataFim afetam apenas o cubo_mensal
+  if (f.dataIni && f.dataFim) {
+    match.Ano_Mes = { $gte: f.dataIni, $lte: f.dataFim };
+  } else if (f.dataIni) {
+    match.Ano_Mes = { $gte: f.dataIni };
+  } else if (f.dataFim) {
+    match.Ano_Mes = { $lte: f.dataFim };
+  }
+
+  return match;
+}
+
+/**
+ * Constrói cláusula $match para inventarios (auditorias no nível de filial/loja)
+ * Não inclui filtros de Comprador ou Categoria (inexistentes no log de inventários da filial).
+ */
+export function buildMatchInventarios(query = {}) {
+  const f = parseGlobalFilters(query);
+  const match = {};
+
+  if (f.filial !== null) {
+    match.Filial = f.filial;
+  } else {
+    if (f.cidade) {
+      const escaped = f.cidade.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      match.Cidade = new RegExp(`^${escaped}$`, 'i');
+    }
+    if (f.supervisor) {
+      const supClean = f.supervisor.includes(' - ') ? f.supervisor.split(' - ')[0].trim() : f.supervisor.trim();
+      const escaped = supClean.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      match.Supervisor = new RegExp(escaped, 'i');
+    }
+    if (f.estado) {
+      const escaped = f.estado.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      match.Estado = new RegExp(`^${escaped}$`, 'i');
+    }
+    if (f.regiao) {
+      const escaped = f.regiao.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      match.Regiao = new RegExp(`^${escaped}$`, 'i');
+    }
+  }
+
   if (f.dataIni && f.dataFim) {
     match.Ano_Mes = { $gte: f.dataIni, $lte: f.dataFim };
   } else if (f.dataIni) {

@@ -7,7 +7,6 @@ import rateLimit from 'express-rate-limit';
 
 import metaRoutes from './routes/metaRoutes.js';
 import overviewRoutes from './routes/overviewRoutes.js';
-import mlRoutes from './routes/mlRoutes.js';
 import excessoRoutes from './routes/excessoRoutes.js';
 import rupturaRoutes from './routes/rupturaRoutes.js';
 import scoreRoutes from './routes/scoreRoutes.js';
@@ -46,7 +45,6 @@ app.get('/health', (req, res) => res.status(200).json({ ok: true, timestamp: new
 // Montagem das rotas sob o prefixo /api
 app.use('/api', metaRoutes);
 app.use('/api', overviewRoutes);
-app.use('/api', mlRoutes);
 app.use('/api', excessoRoutes);
 app.use('/api', rupturaRoutes);
 app.use('/api', scoreRoutes);

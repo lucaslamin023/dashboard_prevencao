@@ -11,7 +11,6 @@ import {
   Divider,
 } from '@mui/material';
 import DashboardOutlinedIcon from '@mui/icons-material/DashboardOutlined';
-import PsychologyOutlinedIcon from '@mui/icons-material/PsychologyOutlined';
 import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
 import ProductionQuantityLimitsOutlinedIcon from '@mui/icons-material/ProductionQuantityLimitsOutlined';
 import FactCheckOutlinedIcon from '@mui/icons-material/FactCheckOutlined';
@@ -38,12 +37,6 @@ const navItems = [
     path: '/inventario',
     icon: RuleFolderOutlinedIcon,
     color: '#06B6D4',
-  },
-  {
-    text: 'Risco Preditivo (ML)',
-    path: '/risco-ml',
-    icon: PsychologyOutlinedIcon,
-    color: '#8B5CF6',
   },
   {
     text: 'Excesso por Filial',

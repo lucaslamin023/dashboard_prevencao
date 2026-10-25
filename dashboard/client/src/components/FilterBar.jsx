@@ -21,34 +21,32 @@ export default function FilterBar() {
   const filters = useSelector((state) => state.filters);
   const { data: meta } = useGetMetaFiltrosQuery();
 
-  const regioes = meta?.regioes || [];
-  const estadosPorRegiao = meta?.estados_por_regiao || {};
+  const supervisores = meta?.supervisores || [];
+  const cidadesPorSupervisor = meta?.cidades_por_supervisor || {};
+  const todasCidades = meta?.cidades || [];
   const filiais = meta?.filiais || [];
   const compradores = meta?.compradores || [];
   const categorias = meta?.categorias || [];
   const dataReferencia = meta?.data_referencia || '2026-09-30';
 
-  // Lista de estados disponíveis baseada na região selecionada
-  let estadosDisponiveis = [];
-  if (filters.regiao && estadosPorRegiao[filters.regiao]) {
-    estadosDisponiveis = estadosPorRegiao[filters.regiao];
+  // Lista de cidades disponíveis baseada no supervisor selecionado
+  let cidadesDisponiveis = [];
+  if (filters.supervisor && cidadesPorSupervisor[filters.supervisor]) {
+    cidadesDisponiveis = cidadesPorSupervisor[filters.supervisor];
   } else {
-    // Todos os estados
-    const allEst = new Set();
-    Object.values(estadosPorRegiao).forEach((arr) => arr.forEach((e) => allEst.add(e)));
-    estadosDisponiveis = Array.from(allEst).sort();
+    cidadesDisponiveis = todasCidades;
   }
 
-  // Lista de filiais filtradas por região e estado
+  // Lista de filiais filtradas por supervisor e cidade
   const filiaisFiltradas = filiais.filter((f) => {
-    if (filters.regiao && f.regiao?.toUpperCase() !== filters.regiao?.toUpperCase()) return false;
-    if (filters.estado && f.estado?.toUpperCase() !== filters.estado?.toUpperCase()) return false;
+    if (filters.supervisor && f.supervisor?.toUpperCase() !== filters.supervisor?.toUpperCase()) return false;
+    if (filters.cidade && f.cidade?.toUpperCase() !== filters.cidade?.toUpperCase()) return false;
     return true;
   });
 
   const hasActiveFilters = Boolean(
-    filters.regiao ||
-    filters.estado ||
+    filters.supervisor ||
+    filters.cidade ||
     filters.filial ||
     filters.comprador ||
     filters.categoria ||
@@ -71,43 +69,43 @@ export default function FilterBar() {
         borderBottom: (theme) => `1px solid ${theme.palette.divider}`,
       }}
     >
-      {/* 1. Região */}
-      <FormControl size="small" sx={{ minWidth: 140 }}>
-        <InputLabel id="filtro-regiao-label">Região</InputLabel>
+      {/* 1. Supervisor */}
+      <FormControl size="small" sx={{ minWidth: 200 }}>
+        <InputLabel id="filtro-supervisor-label">Supervisor</InputLabel>
         <Select
-          labelId="filtro-regiao-label"
-          id="filtro-regiao"
-          value={filters.regiao || ''}
-          label="Região"
-          onChange={(e) => dispatch(setFilter({ key: 'regiao', value: e.target.value }))}
+          labelId="filtro-supervisor-label"
+          id="filtro-supervisor"
+          value={filters.supervisor || ''}
+          label="Supervisor"
+          onChange={(e) => dispatch(setFilter({ key: 'supervisor', value: e.target.value }))}
         >
           <MenuItem value="">
-            <em>Todas</em>
+            <em>Todos ({supervisores.length})</em>
           </MenuItem>
-          {regioes.map((r) => (
-            <MenuItem key={r} value={r}>
-              {r}
+          {supervisores.map((s) => (
+            <MenuItem key={s} value={s}>
+              {s}
             </MenuItem>
           ))}
         </Select>
       </FormControl>
 
-      {/* 2. Estado */}
-      <FormControl size="small" sx={{ minWidth: 110 }}>
-        <InputLabel id="filtro-estado-label">Estado</InputLabel>
+      {/* 2. Cidade */}
+      <FormControl size="small" sx={{ minWidth: 140 }}>
+        <InputLabel id="filtro-cidade-label">Cidade</InputLabel>
         <Select
-          labelId="filtro-estado-label"
-          id="filtro-estado"
-          value={filters.estado || ''}
-          label="Estado"
-          onChange={(e) => dispatch(setFilter({ key: 'estado', value: e.target.value }))}
+          labelId="filtro-cidade-label"
+          id="filtro-cidade"
+          value={filters.cidade || ''}
+          label="Cidade"
+          onChange={(e) => dispatch(setFilter({ key: 'cidade', value: e.target.value }))}
         >
           <MenuItem value="">
-            <em>Todos</em>
+            <em>Todas ({cidadesDisponiveis.length})</em>
           </MenuItem>
-          {estadosDisponiveis.map((est) => (
-            <MenuItem key={est} value={est}>
-              {est}
+          {cidadesDisponiveis.map((cid) => (
+            <MenuItem key={cid} value={cid}>
+              {cid}
             </MenuItem>
           ))}
         </Select>
@@ -186,7 +184,13 @@ export default function FilterBar() {
         onChange={(e) => dispatch(setFilter({ key: 'dataIni', value: e.target.value }))}
         InputLabelProps={{ shrink: true }}
         inputProps={{ min: '2023-01', max: '2026-09' }}
-        sx={{ width: 140 }}
+        sx={{
+          width: 140,
+          '& input::-webkit-calendar-picker-indicator': {
+            filter: (theme) => (theme.palette.mode === 'dark' ? 'invert(1)' : 'none'),
+            cursor: 'pointer',
+          },
+        }}
       />
 
       {/* 7. Período Até */}
@@ -199,7 +203,13 @@ export default function FilterBar() {
         onChange={(e) => dispatch(setFilter({ key: 'dataFim', value: e.target.value }))}
         InputLabelProps={{ shrink: true }}
         inputProps={{ min: '2023-01', max: '2026-09' }}
-        sx={{ width: 140 }}
+        sx={{
+          width: 140,
+          '& input::-webkit-calendar-picker-indicator': {
+            filter: (theme) => (theme.palette.mode === 'dark' ? 'invert(1)' : 'none'),
+            cursor: 'pointer',
+          },
+        }}
       />
 
       {/* Botão Limpar Filtros */}

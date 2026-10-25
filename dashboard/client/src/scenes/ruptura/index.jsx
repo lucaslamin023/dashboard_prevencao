@@ -168,7 +168,7 @@ export default function Ruptura() {
             <ResponsivePie
               data={distribuicao || []}
               margin={{ top: 20, right: 30, bottom: 40, left: 30 }}
-              innerRadius={0.6}
+              innerRadius={0.62}
               padAngle={2}
               cornerRadius={4}
               activeOuterRadiusOffset={6}
@@ -179,17 +179,13 @@ export default function Ruptura() {
               arcLabelsSkipAngle={10}
               arcLabelsTextColor="#FFFFFF"
               arcLabel={(d) => `${formatPercent(d.data.perc)}`}
-              theme={{
-                tooltip: {
-                  container: {
-                    background: '#1E293B',
-                    color: '#F8FAFC',
-                    fontSize: 12,
-                    borderRadius: 6,
-                    border: '1px solid #334155',
-                  },
-                },
-              }}
+              tooltip={({ datum }) => (
+                <Box sx={{ p: 1, backgroundColor: '#1E293B', borderRadius: 1, border: '1px solid #334155' }}>
+                  <Typography variant="caption" sx={{ color: datum.color, fontWeight: 700 }}>
+                    {datum.label}: {formatNumber(datum.value)} itens ({formatPercent(datum.data.perc)})
+                  </Typography>
+                </Box>
+              )}
             />
           </ChartCard>
         </Grid>
@@ -199,24 +195,29 @@ export default function Ruptura() {
             <Typography variant="h4" fontWeight={700} gutterBottom>
               Protocolo de Ressuprimento de Emergência
             </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-              Itens listados nesta tela exigem prioridade imediata de compra ou solicitação de transferência entre CDs/lojas para estancar perda de vendas e penalidades de Farmácia Popular.
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 2.5 }}>
+              Itens listados nesta tela exigem prioridade imediata de compra ou solicitação de transferência entre CDs/lojas para estancar perda de vendas.
             </Typography>
 
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', p: 1.5, borderRadius: 2, backgroundColor: 'rgba(225, 29, 72, 0.1)', border: '1px solid rgba(225, 29, 72, 0.3)' }}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.2 }}>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', p: 1.2, borderRadius: 2, backgroundColor: 'rgba(225, 29, 72, 0.1)', border: '1px solid rgba(225, 29, 72, 0.3)' }}>
                 <Typography variant="body2" fontWeight={700} color="#E11D48">Ruptura Consumada (0 unidades)</Typography>
                 <Typography variant="body2" fontWeight={800}>{formatNumber(kpis?.rupt_consumada)} ocorrências</Typography>
               </Box>
 
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', p: 1.5, borderRadius: 2, backgroundColor: 'rgba(244, 63, 94, 0.1)', border: '1px solid rgba(244, 63, 94, 0.3)' }}>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', p: 1.2, borderRadius: 2, backgroundColor: 'rgba(244, 63, 94, 0.1)', border: '1px solid rgba(244, 63, 94, 0.3)' }}>
                 <Typography variant="body2" fontWeight={700} color="#F43F5E">Estoque Crítico (&lt; 3 dias)</Typography>
                 <Typography variant="body2" fontWeight={800}>{formatNumber(kpis?.rupt_critico)} ocorrências</Typography>
               </Box>
 
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', p: 1.5, borderRadius: 2, backgroundColor: 'rgba(245, 158, 11, 0.1)', border: '1px solid rgba(245, 158, 11, 0.3)' }}>
-                <Typography variant="body2" fontWeight={700} color="#F59E0B">Risco Moderado (3 a 7 dias)</Typography>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', p: 1.2, borderRadius: 2, backgroundColor: 'rgba(245, 158, 11, 0.1)', border: '1px solid rgba(245, 158, 11, 0.3)' }}>
+                <Typography variant="body2" fontWeight={700} color="#F59E0B">Risco Moderado (3 a 10 dias)</Typography>
                 <Typography variant="body2" fontWeight={800}>{formatNumber(kpis?.rupt_moderado)} ocorrências</Typography>
+              </Box>
+
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', p: 1.2, borderRadius: 2, backgroundColor: 'rgba(16, 185, 129, 0.1)', border: '1px solid rgba(16, 185, 129, 0.3)' }}>
+                <Typography variant="body2" fontWeight={700} color="#10B981">Sem Risco (&gt; 10 dias de autonomia)</Typography>
+                <Typography variant="body2" fontWeight={800}>{formatNumber(kpis?.rupt_sem_risco)} ocorrências</Typography>
               </Box>
             </Box>
           </Card>
