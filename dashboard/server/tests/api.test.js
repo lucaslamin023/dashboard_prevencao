@@ -127,44 +127,36 @@ describe('🚀 Backend API Test Suite (Fase 4)', () => {
   });
 
   // =========================================================================
-  // 4. Risco ML
+  // 4. Vendas A Vencer & Inventário
   // =========================================================================
-  describe('Risco Preditivo (ML)', () => {
-    it('GET /api/risco-ml/kpis retorna métricas do modelo', async () => {
-      const res = await request(app).get('/api/risco-ml/kpis');
+  describe('Vendas A Vencer', () => {
+    it('GET /api/vendas-av/kpis retorna métricas de vendas a vencer', async () => {
+      const res = await request(app).get('/api/vendas-av/kpis');
       expect(res.status).toBe(200);
-      expect(res.body).toHaveProperty('ml_critico');
-      expect(res.body).toHaveProperty('ml_alto');
-      expect(res.body).toHaveProperty('valor_av_ml_critico');
-      expect(res.body).toHaveProperty('score_ml_medio');
+      expect(res.body).toHaveProperty('faturamento_av');
+      expect(res.body).toHaveProperty('perc_conversao_av');
     });
 
-    it('GET /api/risco-ml/top-produtos retorna até 10 produtos', async () => {
-      const res = await request(app).get('/api/risco-ml/top-produtos');
+    it('GET /api/vendas-av/evolucao retorna série temporal', async () => {
+      const res = await request(app).get('/api/vendas-av/evolucao');
       expect(res.status).toBe(200);
       expect(res.body).toBeInstanceOf(Array);
-      expect(res.body.length).toBeLessThanOrEqual(10);
-      if (res.body.length > 0) {
-        expect(res.body[0]).toHaveProperty('score_ml');
-      }
     });
+  });
 
-    it('GET /api/risco-ml/scatter retorna pontos com x e y', async () => {
-      const res = await request(app).get('/api/risco-ml/scatter');
+  describe('Acuracidade de Estoque & Inventário', () => {
+    it('GET /api/inventario/kpis retorna KPIs de inventário', async () => {
+      const res = await request(app).get('/api/inventario/kpis');
       expect(res.status).toBe(200);
-      expect(res.body).toBeInstanceOf(Array);
-      if (res.body.length > 0) {
-        expect(res.body[0]).toHaveProperty('x');
-        expect(res.body[0]).toHaveProperty('y');
-        expect(res.body[0]).toHaveProperty('score_ml');
-      }
+      expect(res.body).toHaveProperty('acuracidade_media');
+      expect(res.body).toHaveProperty('diferenca_liquida');
     });
 
-    it('GET /api/risco-ml/tabela retorna lista paginada', async () => {
-      const res = await request(app).get('/api/risco-ml/tabela?page=0&pageSize=15');
+    it('GET /api/inventario/ultimo-inventario retorna lista de filiais', async () => {
+      const res = await request(app).get('/api/inventario/ultimo-inventario');
       expect(res.status).toBe(200);
       expect(res.body).toHaveProperty('total');
-      expect(res.body.dados.length).toBeLessThanOrEqual(15);
+      expect(res.body.dados).toBeInstanceOf(Array);
     });
   });
 

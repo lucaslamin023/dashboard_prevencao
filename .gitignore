@@ -5,6 +5,10 @@ Dados_Consolidados/
 *.xlsx
 Score_Risco_Perda*.ipynb
 
+# Documentation
+PLANO_IMPLEMENTACAO.md
+PLANO_DE_IMPLEMENTACAO.md
+
 # Environment & Secrets
 .env*
 *.env
@@ -21,3 +25,18 @@ __pycache__/
 .pytest_cache/
 .venv/
 venv/
+
+# Scripts temporários / correções / patches de ETL
+etl/ajustar_*.py
+etl/aplicar_*.py
+etl/atualizar_*.py
+etl/concluir_*.py
+etl/executar_*.py
+etl/fix_*.py
+etl/inspect_*.py
+etl/migrar_*.py
+etl/temp_*.py
+etl/scratch_*.py
+etl/*_ajustes.py
+etl/*_migracao*.py
+

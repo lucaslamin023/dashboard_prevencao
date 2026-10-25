@@ -1,0 +1,32 @@
+services:
+  # Backend API - Web Service Node.js
+  - type: web
+    name: prevencao-api
+    runtime: node
+    rootDir: dashboard/server
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_VERSION
+        value: 20
+      - key: MONGO_URL
+        sync: false
+      - key: CLIENT_URL
+        sync: false
+
+  # Frontend Web - Static Site Vite / React
+  - type: web
+    name: prevencao-web
+    runtime: static
+    rootDir: dashboard/client
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+    envVars:
+      - key: VITE_API_URL
+        sync: false
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html

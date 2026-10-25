@@ -15,11 +15,15 @@ import inventarioRoutes from './routes/inventarioRoutes.js';
 
 const app = express();
 
+// Confiança no proxy do Render / Load Balancer (necessário para express-rate-limit)
+app.set('trust proxy', 1);
+
 // Segurança e utilitários
 app.use(helmet());
+const allowedOrigin = process.env.CLIENT_URL;
 app.use(cors({
-  origin: '*', // Permitir acesso local e do deploy frontend
-  methods: ['GET'], // API somente leitura de analytics
+  origin: allowedOrigin ? [allowedOrigin, 'http://localhost:3000', 'http://localhost:5173'] : '*',
+  methods: ['GET'],
 }));
 app.use(compression());
 app.use(express.json());
@@ -39,8 +43,9 @@ const limiter = rateLimit({
 });
 app.use('/api', limiter);
 
-// Rota de Health check direta na raiz (para liveness probe do Render)
+// Rota de Health check direta e sob /api (para liveness probe do Render)
 app.get('/health', (req, res) => res.status(200).json({ ok: true, timestamp: new Date().toISOString() }));
+app.get('/api/health', (req, res) => res.status(200).json({ ok: true, timestamp: new Date().toISOString() }));
 
 // Montagem das rotas sob o prefixo /api
 app.use('/api', metaRoutes);
