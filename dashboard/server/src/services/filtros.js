@@ -60,6 +60,7 @@ export function buildMatchCuboMensal(query = {}) {
   }
 
   if (f.comprador) match.Comprador = new RegExp(`^${f.comprador}$`, 'i');
+  if (f.categoria) match.Categoria = new RegExp(`^${f.categoria}$`, 'i');
 
   // dataIni e dataFim afetam apenas o cubo_mensal
   if (f.dataIni && f.dataFim) {
@@ -76,11 +77,12 @@ export function buildMatchCuboMensal(query = {}) {
 /**
  * Constrói paginação e ordenação padrão para tabelas
  */
-export function parsePagination(query = {}, defaultSort = '_id', defaultOrder = 1) {
+export function parsePagination(query = {}, defaultSort = '_id', defaultOrder = 1, fieldMap = {}) {
   const page = Math.max(0, parseInt(query.page, 10) || 0);
   const pageSize = Math.min(100, Math.max(1, parseInt(query.pageSize, 10) || 25));
 
-  const sortField = query.sort || defaultSort;
+  const rawField = query.sort || defaultSort;
+  const sortField = (fieldMap && fieldMap[rawField]) ? fieldMap[rawField] : rawField;
   let sortOrder = defaultOrder;
 
   if (query.order) {

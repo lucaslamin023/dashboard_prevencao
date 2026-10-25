@@ -11,6 +11,8 @@ import mlRoutes from './routes/mlRoutes.js';
 import excessoRoutes from './routes/excessoRoutes.js';
 import rupturaRoutes from './routes/rupturaRoutes.js';
 import scoreRoutes from './routes/scoreRoutes.js';
+import vendasAvRoutes from './routes/vendasAvRoutes.js';
+import inventarioRoutes from './routes/inventarioRoutes.js';
 
 const app = express();
 
@@ -48,6 +50,8 @@ app.use('/api', mlRoutes);
 app.use('/api', excessoRoutes);
 app.use('/api', rupturaRoutes);
 app.use('/api', scoreRoutes);
+app.use('/api/vendas-av', vendasAvRoutes);
+app.use('/api/inventario', inventarioRoutes);
 
 // Tratamento de 404 para rotas inexistentes
 app.use((req, res) => {

@@ -130,9 +130,31 @@ export async function getTreemap(req, res) {
       });
     }
 
+    const topFiliais = filiaisAgg
+      .map((f) => {
+        const nome = f.nome_filial || `Filial ${f._id.filial}`;
+        const estoque = f.estoque_un || 0;
+        const excesso = f.excesso_un || 0;
+        const valorExcesso = Math.round((f.valor_excesso_custo || 0) * 100) / 100;
+        const percExcesso = estoque > 0 ? Math.round((excesso / estoque) * 10000) / 100 : 0;
+        return {
+          filial: f._id.filial,
+          nome,
+          nome_curto: nome.length > 18 ? `${nome.substring(0, 16)}...` : nome,
+          estado: f._id.estado || '—',
+          estoque_un: estoque,
+          excesso_un: excesso,
+          valor_excesso: valorExcesso,
+          perc_excesso: percExcesso,
+        };
+      })
+      .sort((a, b) => b.valor_excesso - a.valor_excesso)
+      .slice(0, 10);
+
     const result = {
       name: 'Rede',
       children,
+      top_filiais: topFiliais,
     };
 
     cache.set(cacheKey, result, 300);

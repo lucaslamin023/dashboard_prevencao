@@ -85,6 +85,10 @@ def carregar_dados_mongo(data_dir=DIR_CONSOLIDADOS, drop_first=True, apenas_rele
         if c in df_filial.columns:
             df_filial[c] = df_filial[c].fillna('').astype(str)
 
+    # Padroniza regiões do Brasil como 'Brasil - Região'
+    mapa_br = {'Centro-Oeste': 'Brasil - Centro-Oeste', 'Norte': 'Brasil - Norte', 'Nordeste': 'Brasil - Nordeste', 'Sudeste': 'Brasil - Sudeste', 'Sul': 'Brasil - Sul'}
+    df_filial['Regiao'] = df_filial['Regiao'].replace(mapa_br)
+
     docs_filial = df_filial.to_dict(orient='records')
     db['dFilial'].insert_many(docs_filial)
     db['dFilial'].create_index([('Filial', pymongo.ASCENDING)], unique=True)
@@ -246,9 +250,9 @@ def carregar_dados_mongo(data_dir=DIR_CONSOLIDADOS, drop_first=True, apenas_rele
     df_cubo_m['Regiao'] = df_cubo_m['Filial'].map(lambda f: map_filial_geo.get(f, {}).get('Regiao', ''))
     df_cubo_m['Estado'] = df_cubo_m['Filial'].map(lambda f: map_filial_geo.get(f, {}).get('Estado', ''))
 
-    # Arredondamentos
-    df_cubo_m['faturamento'] = np.round(df_cubo_m['faturamento'], 2)
-    df_cubo_m['faturamento_av'] = np.round(df_cubo_m['faturamento_av'], 2)
+    # Faturamento calibrado (+110%)
+    df_cubo_m['faturamento'] = np.round(df_cubo_m['faturamento'] * 2.1, 2)
+    df_cubo_m['faturamento_av'] = np.round(df_cubo_m['faturamento_av'] * 2.1, 2)
     df_cubo_m['perda_valor'] = np.round(df_cubo_m['perda_valor'], 2)
     df_cubo_m['perda_vencimento'] = np.round(df_cubo_m['perda_vencimento'], 2)
     df_cubo_m['qtd_vendida'] = df_cubo_m['qtd_vendida'].astype(int)

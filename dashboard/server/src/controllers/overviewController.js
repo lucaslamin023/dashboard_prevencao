@@ -37,6 +37,8 @@ export async function getOverviewKpis(req, res) {
             _id: null,
             faturamento: { $sum: '$faturamento' },
             faturamento_av: { $sum: '$faturamento_av' },
+            total_av: { $sum: '$total_av' },
+            perda_vencimento: { $sum: '$perda_vencimento' },
             perdas: { $sum: '$perda_valor' },
           },
         },
@@ -60,6 +62,8 @@ export async function getOverviewKpis(req, res) {
     const faturamento = Math.round((m.faturamento || 0) * 100) / 100;
     const perdas = Math.round((m.perdas || 0) * 100) / 100;
     const faturamentoAv = Math.round((m.faturamento_av || 0) * 100) / 100;
+    const totalAv = Math.round(((m.total_av || (faturamentoAv + (m.perda_vencimento || 0)))) * 100) / 100;
+    const percVendasAv = totalAv > 0 ? Math.round((faturamentoAv / totalAv) * 10000) / 100 : 0;
     const estoqueUn = c.estoque_un || 0;
     const excessoUn = c.excesso_un || 0;
     const totalN = c.total_n || 0;
@@ -68,8 +72,11 @@ export async function getOverviewKpis(req, res) {
     const result = {
       faturamento,
       perdas,
+      faturamento_av: faturamentoAv,
+      total_av: totalAv,
       perc_perda_faturamento: faturamento > 0 ? Math.round((perdas / faturamento) * 10000) / 100 : 0,
-      perc_vendas_av: faturamento > 0 ? Math.round((faturamentoAv / faturamento) * 10000) / 100 : 0,
+      perc_vendas_av: percVendasAv,
+      meta_vendas_av: 80.0,
       perc_indice_excesso: estoqueUn > 0 ? Math.round((excessoUn / estoqueUn) * 10000) / 100 : 0,
       perc_ruptura_severa: totalN > 0 ? Math.round((ruptSevera / totalN) * 10000) / 100 : 0,
       qtd_alto_risco_score: c.aud_alto || 0,

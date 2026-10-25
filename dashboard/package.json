@@ -1,0 +1,14 @@
+{
+  "name": "dashboard-prevencao",
+  "version": "1.0.0",
+  "description": "Orquestrador de execução do Dashboard de Prevenção de Perdas",
+  "scripts": {
+    "dev:server": "npm run dev --prefix server",
+    "start:server": "npm start --prefix server",
+    "dev:client": "npm run dev --prefix client",
+    "build:client": "npm run build --prefix client",
+    "build": "npm run build --prefix client",
+    "test:server": "npm test --prefix server",
+    "test": "npm test --prefix server"
+  }
+}

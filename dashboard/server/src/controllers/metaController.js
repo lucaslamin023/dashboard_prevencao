@@ -45,10 +45,11 @@ export async function getFiltros(req, res) {
       estadosFormatados[r] = Array.from(estSet).sort();
     }
 
-    // 3. Compradores e Categorias distintos a partir de cubo
-    const [compradores, categorias] = await Promise.all([
+    // 3. Compradores e Categorias distintos a partir de cubo e meses de cubo_mensal
+    const [compradores, categorias, meses] = await Promise.all([
       db.collection('cubo').distinct('Comprador'),
       db.collection('cubo').distinct('Categoria'),
+      db.collection('cubo_mensal').distinct('Ano_Mes'),
     ]);
 
     const result = {
@@ -66,6 +67,7 @@ export async function getFiltros(req, res) {
       })),
       compradores: compradores.filter(Boolean).sort(),
       categorias: categorias.filter(Boolean).sort(),
+      meses_disponiveis: meses.filter(Boolean).sort(),
     };
 
     cache.set(cacheKey, result, 600); // 10 min TTL

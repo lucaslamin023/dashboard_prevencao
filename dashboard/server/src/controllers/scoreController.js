@@ -254,7 +254,23 @@ export async function getTabelaScore(req, res) {
       }
     }
 
-    const { page, pageSize, skip, sort } = parsePagination(req.query, 'Score_Auditoria', -1);
+    const sortFieldMap = {
+      codigo: 'Codigo_Produto',
+      nome: 'Nome_Produto',
+      filial: 'Filial',
+      nome_filial: 'Nome_Filial',
+      grupo: 'Grupo',
+      categoria: 'Categoria',
+      comprador: 'Comprador',
+      score: 'Score_Auditoria',
+      classificacao: 'Classificacao_Risco_Auditoria',
+      acao: 'Acao_Recomendada',
+      valor_estoque: 'Valor_Estoque_Custo',
+      estoque: 'Estoque_Atual',
+      dias_cobertura: 'Dias_Cobertura',
+    };
+
+    const { page, pageSize, skip, sort } = parsePagination(req.query, 'Score_Auditoria', -1, sortFieldMap);
 
     const [total, docs] = await Promise.all([
       db.collection('indicadores').countDocuments(match),

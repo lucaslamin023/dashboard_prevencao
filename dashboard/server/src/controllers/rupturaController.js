@@ -144,7 +144,20 @@ export async function getTabelaRuptura(req, res) {
       }
     }
 
-    const { page, pageSize, skip, sort } = parsePagination(req.query, 'Dias_Cobertura', 1);
+    const sortFieldMap = {
+      codigo: 'Codigo_Produto',
+      nome: 'Nome_Produto',
+      filial: 'Filial',
+      nome_filial: 'Nome_Filial',
+      categoria: 'Categoria',
+      comprador: 'Comprador',
+      estoque: 'Estoque_Atual',
+      demanda: 'Demanda_Atual',
+      dias_cobertura: 'Dias_Cobertura',
+      status_ruptura: 'Status_Ruptura',
+    };
+
+    const { page, pageSize, skip, sort } = parsePagination(req.query, 'Demanda_Atual', -1, sortFieldMap);
 
     const [total, docs] = await Promise.all([
       db.collection('indicadores').countDocuments(match),
